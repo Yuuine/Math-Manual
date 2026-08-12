@@ -1,0 +1,69 @@
+// 引擎脚本有序列表 — 新增通用组件/widget 时同步改 src/styles/engine.css
+;(function () {
+  window.AICLASS_ENGINE_MANIFEST = [
+    // core/layout — 舞台与背景
+    'core/layout/layout-stage.js',
+    'core/layout/background-board.js',
+    'core/layout/scene-background.js',
+    'config/module-registry.js',
+    'components/toast.js',
+    // core/session — 早期依赖（submit / snapshot / log / gate）
+    'core/session/submit-text.js',
+    'core/session/interaction-snapshot.js',
+    'core/session/execution-log.js',
+    'bridge/courseware-submit.js',
+    'core/session/interaction-gate.js',
+    // core/scroll
+    'core/scroll/scroll-index.js',
+    'core/scroll/scroll-follow.js',
+    'core/scroll/scrollbar-auto-hide.js',
+    // core/shell — 课容器（figure-host / problem-brief / calc 为 AIClass_figure 附加层）
+    'components/difficulty-stars.js',
+    'components/course-stem-head.js',
+    'components/overlay-scrollbar.js',
+    'components/stem-zoom.js',
+    'core/shell/course-container.js',
+    'core/layout/stage-scroll-lock.js',
+    'core/layout/overlay-mount.js',
+
+    // widget 注册表（必须在 widget 文件之前）
+    'widgets/registry.js',
+
+    // components — 通用 UI 原语
+    'components/dom.js',
+    'components/option.js',
+    'components/button.js',
+    'components/choice.js',
+    'components/viewport-scale.js',
+    'components/file-postmessage-compat.js',
+    'https://cdn.jsdmirror.com/npm/mathlive@0.110.0/mathlive.min.js',
+    'components/mathlive.js',
+    'components/latex.js',
+    'components/recognition-result.js',
+    'components/hand-hint.js',
+    'components/oral-input.js',
+    'components/oral-card.js',
+    'components/choice-card.js',
+    'components/quick-qa.js',
+    'components/image-zoom.js',
+
+    // widgets — 通用块渲染器
+    'widgets/text.js',
+    'widgets/oral.js',
+    'widgets/solve-step.js',
+    'widgets/fill.js',
+    'widgets/intro-gallery.js',
+    'widgets/latex.js',
+    'widgets/choice.js',
+    'widgets/stem-choice.js',
+    'widgets/chain.js',
+    'widgets/read-list.js',
+
+    // core/session — 必须在 toolkit 之后加载
+    'core/shell/container-host.js',
+
+    // timeline — 主编排驱动器（新引擎；在 course-container/registry/figure-host 之后）
+    'core/timeline/plan-loader.js',
+    'core/timeline/render-state.js'
+  ]
+})()

@@ -1,0 +1,100 @@
+.cc-problem-brief {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  margin: 0 0 0.875rem;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid #dbe3ee;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+  backdrop-filter: blur(10px);
+}
+.cc-problem-brief > * + * {
+  margin-top: 0.5rem;
+}
+
+.cc-problem-brief[hidden],
+.cc-problem-brief__row[hidden],
+.cc-problem-brief__line[hidden] {
+  display: none !important;
+}
+
+/* sticky 兜底：无 position: sticky（Chrome 51 / iOS 13）时由 sticky-fallback.js 切 is-stuck，fixed 吸顶 */
+.no-sticky .cc-problem-brief.is-stuck {
+  position: fixed;
+  top: 0;
+  z-index: 4;
+}
+
+.cc-problem-brief--embedded {
+  position: static;
+  margin: 0;
+  padding: 0.125rem 0 0.625rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.cc-problem-brief__row {
+  display: flex;
+  align-items: flex-start;
+  color: #1e293b;
+  font-size: calc(var(--cc-body-size, 1.75rem) * 0.82);
+  line-height: 1.42;
+}
+.cc-problem-brief__row > * + * {
+  margin-left: 0.625rem;
+}
+
+.cc-problem-brief__label {
+  flex: 0 0 auto;
+  min-width: 2.5em;
+  padding: 0.0625rem 0.4375rem;
+  border-radius: 62.4375rem;
+  background: #e0ecff;
+  color: #1d4ed8;
+  font-size: 0.82em;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.cc-problem-brief__row.is-ask .cc-problem-brief__label {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.cc-problem-brief__row.is-key .cc-problem-brief__label {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.cc-problem-brief__content {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.cc-problem-brief__line + .cc-problem-brief__line {
+  margin-top: 0.125rem;
+}
+
+.cc-problem-brief__row:not([hidden]),
+.cc-problem-brief__line:not([hidden]) {
+  animation: cc-problem-brief-reveal 220ms ease-out both;
+}
+
+@keyframes cc-problem-brief-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(0.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

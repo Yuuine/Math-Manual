@@ -1,0 +1,148 @@
+/* 列式填空卡片 — 白底 + 提示行 + 加粗横线，与口答/选择卡片一致 */
+
+.course-container .lf-fill-card {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.625rem 0.875rem; /* 10px 14px */
+  border: 1px solid #cbd5e1;
+  border-radius: 0.625rem; /* 10px */
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  font-size: var(--cc-body-size, var(--lf-body-size, 1.75rem)); /* 28px 回退 */
+  line-height: 1.45;
+  color: var(--cc-ink, #0f172a);
+}
+
+.course-container[data-guidance-layout="interleaved"] .cc-guide-panel .lf-fill-card {
+  border-color: #d1d5db;
+}
+
+.course-container[data-guidance-layout="interleaved"] .cc-guide-slot .lf-fill-card {
+  font-size: var(--cc-guide-slot-size);
+}
+
+.course-container .lf-fill-card .lf-fill-row {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 0.625rem 0; /* 10px 0 */
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* gap: 4px（行内纵向）→ 前一子项补 margin-bottom */
+.course-container .lf-fill-card .lf-fill-label {
+  margin-bottom: 0.25rem; /* 4px */
+}
+
+.course-container .lf-fill-card .lf-fill-row:first-child {
+  padding-top: 0;
+}
+
+.course-container .lf-fill-card .lf-fill-row:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.course-container .lf-fill-card .lf-fill-hint {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0.25rem; /* 4px 替代行内 gap: 4px */
+}
+
+.course-container .lf-fill-card .lf-fill-hint > * + * {
+  margin-top: 0.1875rem; /* 3px 替代 gap: 3px */
+}
+
+.course-container .lf-fill-card .lf-fill-hint-line,
+.course-container .lf-fill-card .lf-fill-hint-line--note,
+.course-container .lf-fill-card .lf-fill-hint-line--formula {
+  color: var(--cc-ink, #0f172a);
+  font-size: inherit;
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+/* :has() 打点改类：无 suffix 的首条提示行由 widgets/fill.js 加 lf-fill-hint-line--plain */
+.course-container .lf-fill-card .lf-fill-hint-line--plain {
+  font-weight: 700;
+}
+
+.course-container .lf-fill-card .lf-fill-hint-strong {
+  font-weight: 700;
+}
+
+.course-container .lf-fill-card .lf-fill-hint-formula,
+.course-container .lf-fill-card .lf-fill-hint-line--formula {
+  font-weight: 400;
+  color: var(--cc-ink, #0f172a);
+}
+
+.course-container .lf-fill-card .lf-fill-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  width: 100%;
+  /* gap: 10px → 负 margin 技术；原 margin-top 6px 折入为 1px */
+  margin: 0.0625rem -0.3125rem -0.3125rem; /* 1px -5px -5px */
+}
+
+.course-container .lf-fill-card .lf-fill-line > * {
+  margin: 0.3125rem; /* 5px 替代 gap: 10px */
+}
+
+.course-container .lf-fill-card .lf-fill-input {
+  flex: 0 1 auto;
+  align-self: flex-start;
+  min-width: 3.5rem;
+  width: auto;
+  max-width: 100%;
+  min-height: 2.625rem; /* 42px */
+  height: auto;
+  overflow: visible;
+  padding: 0.25rem 0.75rem; /* 4px 12px */
+  text-align: left;
+  font-size: inherit;
+  font-weight: 400;
+  color: var(--cc-ink, #0f172a);
+  border-color: #c7d2e0;
+  background: #f6f8fb;
+}
+
+.course-container .lf-fill-card .lf-fill-input--revealed,
+.course-container .lf-fill-card .lf-fill-input:disabled {
+  font-weight: 400;
+}
+
+.course-container .lf-fill-card .lf-fill-input.is-active:not(:disabled) {
+  border-color: #2563eb;
+}
+
+.course-container .lf-fill-card .lf-fill-input::-webkit-input-placeholder {
+  color: #9aa8ba;
+  font-weight: 400;
+  opacity: 1;
+}
+
+.course-container .lf-fill-card .lf-fill-input::placeholder {
+  color: #9aa8ba;
+  font-weight: 400;
+  opacity: 1;
+}
+
+.course-container .lf-fill-card .lf-fill-actions {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  margin-top: 0.625rem; /* 10px */
+  padding-top: 0.5rem; /* 8px */
+  border-top: 1px solid #e5e7eb;
+}
+
+.course-container .lf-block-fill[data-is-current-step="false"] .lf-fill-card .aic-button-submit {
+  display: none;
+}
+
+.course-container[data-guidance-layout="interleaved"] .cc-guide-slot .lf-fill-card .lf-fill-input {
+  min-width: 3.5rem;
+}

@@ -1,0 +1,32 @@
+/* ?????? ? ? engine-manifest.js ??
+   ?? component/widget ????? @import */
+@import "./tokens.css";
+@import "./board.css";
+@import "./scene-background.css";
+@import "./course-container.css";
+@import "./course-presentation.css";
+@import "./guide-track.css";
+@import "./text-explain.css";
+@import "./scrollbar.css";
+@import "./overlay-scrollbar.css";
+@import "./stem-zoom.css";
+/* 基础层自包含：figure 专属（problem-brief/calc-explain）为导出时按 profile 注入，源码不含 */
+@import "./widgets.css";
+@import "./button.css";
+@import "./toast.css";
+@import "./difficulty-stars.css";
+@import "./fill.css";
+@import "./fill-card.css";
+@import "./mathlive-keyboard.css";
+@import "./intro-gallery.css";
+@import "./choice.css";
+@import "./chain.css";
+@import "./read-list.css";
+@import "./hand-hint.css";
+@import "./oral-input.css";
+@import "./oral-card.css";
+@import "./choice-card.css";
+@import "./quick-qa.css";
+@import "./stem-choice.css";
+@import "./image-zoom.css";
+@import "./recognition-result.css";

@@ -1,0 +1,19 @@
+{
+  "name": "math-manual",
+  "version": "0.1.0",
+  "private": true,
+  "description": "基础课件模板仓库（AIClass_figure / AIClass_text 统一基础 + 图展示附加层）。手写 master plan.json，父容器驱动。",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "compat": "node tools/compat-check.mjs engine",
+    "export": "node tools/export.mjs",
+    "test": "node --test tools/tests/"
+  },
+  "dependencies": {
+    "doiuse": "^6.0.0",
+    "postcss": "^8.4.0"
+  }
+}

@@ -1,0 +1,22 @@
+# ---- 依赖 ----
+node_modules/
+
+# ---- 发布产物（编译生成，不入库）----
+dist/
+*.tgz
+
+# ---- 中间产物区（_output_ 整体不入库：手写 plan + 生成的 .generated/ debug/ 均属中间产物）----
+_output_/
+
+# ---- 编辑器 / 系统 ----
+.idea/
+.vscode/
+*.code-workspace
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ---- 本地调试 / 日志 / 临时 ----
+*.log
+npm-debug.log*
+*.tmp

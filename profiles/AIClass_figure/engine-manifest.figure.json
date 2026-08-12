@@ -1,0 +1,31 @@
+{
+  "additions": [
+    {
+      "after": "components/stem-zoom.js",
+      "items": [
+        "core/shell/figure-host.js",
+        "components/problem-brief.js",
+        "components/sticky-fallback.js"
+      ]
+    },
+    {
+      "after": "components/latex.js",
+      "items": [
+        "components/calc-tex-split.js",
+        "components/calc-line-fit.js"
+      ]
+    },
+    {
+      "after": "components/image-zoom.js",
+      "items": [
+        "figures/jxg-loader.js",
+        "figures/jxg-kit-2d.js",
+        "figures/jxg-kit-3d.js",
+        "figures/view3d-animate.js",
+        "figures/kit.js",
+        "figures/registry.js",
+        "figures/spec-loader.js"
+      ]
+    }
+  ]
+}

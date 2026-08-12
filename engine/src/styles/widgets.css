@@ -1,0 +1,200 @@
+/* text / section widget 样式 — 作用域 .course-container */
+
+.course-container {
+  --marker-blue-bg: rgba(59, 130, 246, 0.20);
+  --marker-orange-bg: rgba(245, 158, 11, 0.20);
+  --marker-green-bg: rgba(16, 185, 129, 0.20);
+  --marker-yellow-bg: rgba(251, 191, 36, 0.28);
+  --marker-pink-bg: rgba(255, 142, 178, 0.28);
+  --marker-red-bg: rgba(239, 68, 68, 0.28);
+}
+
+.course-container .lf-block {
+  margin: 0 0 var(--lf-block-gap, 1rem);
+  color: var(--cc-ink, var(--lf-ink));
+}
+
+.course-container .lf-block-section {
+  margin-top: 0.375rem;
+  margin-bottom: 0.75rem;
+}
+
+.course-container .lf-text-line {
+  font-size: var(--cc-body-size, var(--lf-body-size, 1.75rem));
+  line-height: var(--cc-line-height, var(--lf-line-height, 1.58));
+  margin: 0 0 0.5rem;
+}
+
+.course-container .lf-text-line.lf-text-lead {
+  font-weight: 800;
+}
+
+.course-container .lf-text-line .lf-text-red {
+  color: #dc2626;
+  font-weight: 800;
+}
+
+.course-container .lf-section {
+  margin: 0.75rem 0 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1.5px dashed rgba(100, 116, 139, 0.2);
+}
+
+.course-container .lf-section-title {
+  display: inline-block;
+  margin: 0;
+  padding: 0 0.125rem;
+  font-size: calc(var(--cc-body-size, 1.75rem) * 1.06);
+  font-weight: 800;
+  line-height: 1.18;
+  background: var(--marker-pink-bg);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.course-container .lf-section-title--blue { background: var(--marker-blue-bg); }
+.course-container .lf-section-title--orange { background: var(--marker-orange-bg); }
+.course-container .lf-section-title--green { background: var(--marker-green-bg); }
+.course-container .lf-section-title--yellow { background: var(--marker-yellow-bg); }
+.course-container .lf-section-title--pink { background: var(--marker-pink-bg); }
+.course-container .lf-section-title--red { background: var(--marker-red-bg); }
+
+.course-container .lf-section-tag {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.625rem;
+  margin-right: 0.5rem;
+  padding: 0.1875rem 0.625rem;
+  border-radius: 62.4375rem;
+  border: 1px solid rgba(37, 99, 235, 0.45);
+  background: rgba(37, 99, 235, 0.1);
+  color: #1d4ed8;
+  font-size: calc(var(--cc-body-size, var(--lf-body-size, 1.75rem)) * 0.78);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  box-sizing: border-box;
+}
+
+.course-container .lf-section-tag--known {
+  border-color: rgba(5, 150, 105, 0.45);
+  background: rgba(16, 185, 129, 0.12);
+  color: #047857;
+}
+
+.course-container .lf-section-tag--ask {
+  border-color: rgba(217, 119, 6, 0.5);
+  background: rgba(245, 158, 11, 0.14);
+  color: #b45309;
+}
+
+.course-container .lf-section--badge-only {
+  display: flex;
+  align-items: center;
+  margin: 0.25rem 0 0.375rem;
+  padding-top: 0;
+  border-top: none;
+}
+
+.course-container .lf-section.lf-section--lead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  margin: 0.25rem 0 0.375rem;
+  padding-top: 0;
+  border-top: none;
+}
+.course-container .lf-section--lead > * + * {
+  margin-left: 0.5rem;
+}
+
+.course-container .lf-section--lead .lf-section-tag {
+  flex: 0 0 auto;
+  margin-right: 0;
+}
+
+/* lead 行的 lines 换行到下方、挂行缩进对齐 lead（--lf-hang-indent 由 section widget 写入） */
+.course-container .lf-section--lead > .lf-text-line {
+  flex: 0 0 100%;
+  margin-left: 0;
+  margin-top: 0.125rem;
+  padding-left: var(--lf-hang-indent, 4.5em);
+}
+
+.course-container .lf-section-lead {
+  flex: 1 1 0;
+  min-width: 0;
+  font-size: var(--cc-body-size, var(--lf-body-size, 1.75rem));
+  line-height: var(--cc-line-height, var(--lf-line-height, 1.58));
+  font-weight: 400;
+}
+
+/* interleaved 引导槽内 section tag/lead 随槽位字号缩放（text 模板独有规则，合并时补回） */
+.course-container[data-guidance-layout="interleaved"] .cc-guide-slot .lf-section-tag {
+  font-size: calc(var(--cc-guide-slot-size, 1.5rem) * 0.78);
+  min-height: 1.5rem;
+  padding: 0.0625rem 0.5rem;
+}
+.course-container[data-guidance-layout="interleaved"] .cc-guide-slot .lf-section-lead {
+  font-size: var(--cc-guide-slot-size, 1.5rem);
+}
+
+.course-container .lf-block.lf-text--hang-after-tag {
+  display: block;
+  box-sizing: border-box;
+  padding-left: var(--lf-hang-indent, 4.5em);
+}
+
+.course-container .lf-text--hang-after-tag .lf-text-line {
+  margin-bottom: 0;
+}
+
+/* section 正文 lines 与 lead 同权：body 不加粗（.lf-block-section 为 700，仅标题应强调） */
+.course-container .lf-section .lf-text-line {
+  font-weight: 400;
+}
+
+.course-container .lf-solve-step {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 0.25rem;
+}
+
+.course-container .lf-solve-title {
+  color: var(--cc-ink, var(--lf-ink));
+  font-size: var(--cc-body-size, var(--lf-body-size, 1.75rem));
+  line-height: var(--cc-line-height, var(--lf-line-height, 1.58));
+  font-weight: 800;
+}
+
+.course-container .lf-solve-answer-highlight {
+  display: inline-block;
+  margin: 0 0.125rem;
+  padding: 0.0625rem 0.625rem 0.125rem;
+  border: 2px solid #f59e0b;
+  border-radius: 0.5rem;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.2);
+  animation: lf-solve-answer-glow 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes lf-solve-answer-glow {
+  from { box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.2), 0 0 4px rgba(251, 191, 36, 0.25); }
+  to { box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.35), 0 0 10px rgba(251, 191, 36, 0.65); }
+}
+
+.course-container .lf-block.lf-enter {
+  animation: cc-enter-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes cc-enter-up {
+  from {
+    opacity: 0;
+    transform: translateY(0.875rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

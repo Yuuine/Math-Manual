@@ -1,0 +1,41 @@
+/* 设计令牌 — 全局 CSS 变量（字号、颜色、间距） */
+
+:root {
+  --lf-paper: #fffefb;
+  --lf-grid-unit: 1.25rem;
+  --lf-grid-line: rgba(178, 186, 200, 0.18);
+  --lf-grid-line-bold: rgba(158, 168, 184, 0.25);
+  --lf-ink: #0f172a;
+  --lf-font: "Inter", "Microsoft YaHei", "PingFang SC", sans-serif;
+  --lf-body-size: 1.75rem;
+  --lf-line-height: 1.58;
+  --lf-title-size: 2.25rem;
+  --lf-gap: 2rem;
+  --lf-edge-pad: 2rem;
+  --lf-figure-width: 22.5rem;
+  --lf-figure-max-width: 22.5rem;
+  --lf-figure-svg-width: 18.75rem;
+  --lf-blue: #2c74f3;
+  --lf-block-gap: 1rem;
+
+  /* 课程主题 token（源自旧模板 lesson.css；作者课件可用 --aic-course-* 覆盖） */
+  --aic-course-accent: #2563eb;
+  --aic-course-success: #16a34a;
+  --aic-course-warning: #d97706;
+  --aic-course-label-color: #1a4fbf;
+
+  /* 右侧独立滚动区底部留白（口答录音弹窗等外部 overlay 防遮挡） */
+  --cc-scroll-bottom-inset: 1.25rem;
+
+  /* 由 layout-stage.sync 在运行时写入 */
+  --lf-board-scale: 1;
+  --lf-board-offset-x: 0rem;
+  --lf-board-offset-y: 0rem;
+}
+
+body {
+  margin: 0;
+  background-color: var(--lf-paper);
+  font-family: var(--lf-font);
+  color: var(--lf-ink);
+}
