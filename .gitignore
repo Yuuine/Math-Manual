@@ -11,6 +11,11 @@ _output_/
 # ---- 编辑器 / 系统 ----
 .idea/
 .vscode/
+.cursor/
+.claude/
+.reasonix/
+.codex/
+.opencode/
 *.code-workspace
 .DS_Store
 Thumbs.db

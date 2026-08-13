@@ -90,7 +90,8 @@
     timeline.forEach(function (state, i) {
       if (!state || !state.id) return
       byId[state.id] = i
-      ;(state.action && state.action.length ? state.action : [state.action]).forEach(function (name) {
+      ;(state.action && state.action.length ? state.action : [state.action]).forEach(function (entry) {
+        var name = entry && typeof entry === 'object' ? entry.name : entry
         if (name != null && name !== '') byAction[String(name)] = i
       })
     })

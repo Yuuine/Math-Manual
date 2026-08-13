@@ -38,10 +38,21 @@ function fingerprint(block) {
   }
 }
 
+function actionName(entry) {
+  if (entry && typeof entry === 'object' && entry.name != null) return String(entry.name)
+  if (entry != null && entry !== '') return String(entry)
+  return ''
+}
+
 function primaryAction(state) {
   const a = state && state.action
-  if (Array.isArray(a) && a.length) return String(a[0])
-  if (a != null && a !== '') return String(a)
+  if (Array.isArray(a) && a.length) {
+    const n = actionName(a[0])
+    if (n) return n
+  } else if (a != null && !Array.isArray(a)) {
+    const n = actionName(a)
+    if (n) return n
+  }
   return state && state.id ? String(state.id) : ''
 }
 
@@ -332,6 +343,7 @@ function expandHighlightBeats(states) {
             return ensureReplaceKey(b)
           })
       }
+      if (String(st.text || '').indexOf(ph) >= 0) beat.at = ph
       out.push(beat)
     })
   }
@@ -392,12 +404,23 @@ function expandTableLineBeats(states) {
   return out
 }
 
+function fillPartIsBlank(part) {
+  return !!(part && (part.type === 'blank' || part.kind === 'blank'))
+}
+
+function fillPartText(part) {
+  if (!part) return ''
+  if (fillPartIsBlank(part)) return '＿＿'
+  if (part.text != null && part.text !== '') return String(part.text)
+  if (part.value != null && part.value !== '') return String(part.value)
+  return ''
+}
+
 function fillPartsToQuestion(fill) {
   let q = ''
   for (const p of fill.parts || []) {
     if (!p) continue
-    if (p.type === 'blank') q += '＿＿'
-    else q += p.text != null ? String(p.text) : ''
+    q += fillPartText(p)
   }
   return q.replace(/（\s*＿＿\s*）/g, '＿＿').replace(/\(\s*＿＿\s*\)/g, '＿＿')
 }
@@ -419,13 +442,16 @@ function convertFlow2QuickQA(plan, states) {
     return { states, quickQA: [], layout: plan.quickQALayout || null }
   }
 
-  const quickQA = fills.map(({ fill }, i) => {
+  const quickQA = fills.map(({ st: src, fill }, i) => {
     const ans = Array.isArray(fill.answer) ? fill.answer[0] : fill.answer
+    const fromParts = fillPartsToQuestion(fill)
+    const spoken = src && src.text != null ? String(src.text).trim() : ''
+    const question = spoken || fromParts || '（　　）'
     return {
       id: 'qa-' + (i + 1),
-      question: fillPartsToQuestion(fill) || '（　　）',
+      question: question,
       answer: ans != null ? String(ans) : '',
-      fillBlank: true
+      fillBlank: !spoken && /＿＿/.test(fromParts)
     }
   })
 
@@ -549,6 +575,23 @@ function relink(expanded) {
   return expanded
 }
 
+/** 口答/选择/填空/拍照等：test 的 true/false 指向节点口播必须为空 */
+function blankTestTargetTexts(states) {
+  const byId = {}
+  for (const st of states) {
+    if (st && st.id) byId[st.id] = st
+  }
+  for (const st of states) {
+    if (!st || !Array.isArray(st.test)) continue
+    for (const t of st.test) {
+      if (!t || t.next == null) continue
+      const tgt = byId[t.next]
+      if (tgt) tgt.text = ''
+    }
+  }
+  return states
+}
+
 function normalizePlan(plan) {
   const out = deepClone(plan)
   // 已是圈号/快问弹窗手写形态：只做轻量校验字段，不二次拆拍
@@ -570,10 +613,10 @@ function normalizePlan(plan) {
         st.outline = st.outline.map((o) => ({ title: stripSectionNumber(o.title), desc: '' }))
       }
     })
-    out.timeline = relink(insertPracticePhotoFirst(
+    out.timeline = blankTestTargetTexts(relink(insertPracticePhotoFirst(
       out.timeline || [],
       buildFlowContainerMap(out)
-    ))
+    )))
     return out
   }
 
@@ -689,7 +732,7 @@ function normalizePlan(plan) {
     expanded.push(plain)
   }
 
-  out.timeline = relink(insertPracticePhotoFirst(expanded, maps))
+  out.timeline = blankTestTargetTexts(relink(insertPracticePhotoFirst(expanded, maps)))
   out.textAccumulate = out.textAccumulate !== false
   out.guidanceLayout = out.guidanceLayout || 'interleaved'
   return out

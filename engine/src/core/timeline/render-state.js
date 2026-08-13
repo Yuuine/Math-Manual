@@ -80,30 +80,6 @@
     return 0
   }
 
-  function accumulateBlocksForContainer(loader, index, targetIdx, maps) {
-    var map = {}
-    var order = []
-    for (var i = 0; i <= index; i++) {
-      var state = loader.getState(i)
-      if (!state || containerIdxForState(state, maps) !== targetIdx) continue
-      var list = state.blocks || []
-      for (var bi = 0; bi < list.length; bi++) {
-        var block = list[bi]
-        if (!block) continue
-        var key = blockKey(block)
-        if (key) {
-          if (map[key] == null) order.push(key)
-          map[key] = block
-        } else {
-          var anon = 'anon:' + i + ':' + bi
-          order.push(anon)
-          map[anon] = block
-        }
-      }
-    }
-    return order.map(function (k) { return map[k] })
-  }
-
   function seedStateForContainer(loader, index, targetIdx, maps) {
     var seed = null
     for (var i = 0; i <= index; i++) {
@@ -113,16 +89,6 @@
       if (st.head != null) return st
     }
     return seed
-  }
-
-  function lastStateForContainer(loader, index, targetIdx, maps) {
-    var last = null
-    for (var i = 0; i <= index; i++) {
-      var st = loader.getState(i)
-      if (!st || containerIdxForState(st, maps) !== targetIdx) continue
-      last = st
-    }
-    return last
   }
 
   function maxContainerIdxThrough(loader, index, maps) {
@@ -507,15 +473,25 @@
       var record = createOneContainer(meta, seed || loader.getState(index), cIdx)
       if (!record) return false
       records[cIdx] = record
+    }
 
-      var blocks = accumulateBlocksForContainer(loader, index, cIdx, maps)
+    // 按时间线逐拍回放差分，保留各拍的 guide group。
+    // 禁止把累计块一次性灌进最后一个引导槽：否则已显示内容会消失/瞬移。
+    var prevByContainer = {}
+    for (var i = 0; i <= index; i++) {
+      var state = loader.getState(i)
+      if (!state) continue
+      var cIdx = containerIdxForState(state, maps)
+      var rec = records[cIdx]
+      if (!rec) continue
+      var qaOnly = resolveQaOp(state) && !(state.blocks && state.blocks.length)
+      if (qaOnly) continue
+      var blocks = deltaBlocks(prevByContainer[cIdx] || null, state)
       if (blocks.length) {
-        blocks = orderTopThenBody(blocks)
-        var last = lastStateForContainer(loader, index, cIdx, maps) || seed
-        record.container.appendBlocks(blocks, appendOpts(last, true, false))
+        rec.container.appendBlocks(blocks, appendOpts(state, true, false))
       }
-      var lastState = lastStateForContainer(loader, index, cIdx, maps)
-      if (lastState) applyContainerChrome(record.container, lastState, true, false)
+      applyContainerChrome(rec.container, state, true, false)
+      prevByContainer[cIdx] = state
     }
 
     var activeIdx = containerIdxForState(loader.getState(index), maps)
@@ -607,7 +583,8 @@
     if (!opts.silent && window.AIClassExecutionLog && typeof AIClassExecutionLog.post === 'function') {
       var actionName = state.action
       if (Object.prototype.toString.call(actionName) === '[object Array]') {
-        actionName = actionName.length ? actionName[0] : ''
+        var first = actionName.length ? actionName[0] : ''
+        actionName = first && typeof first === 'object' ? first.name : first
       }
       AIClassExecutionLog.post({ type: 'step_ok', action: actionName })
     }

@@ -21,6 +21,19 @@ const FLOWS = [
   { flow_id: 'flow_3', title: '自己来做做练习题' }
 ]
 
+function actionName(entry) {
+  if (entry && typeof entry === 'object' && entry.name != null) return String(entry.name)
+  if (entry != null && entry !== '') return String(entry)
+  return ''
+}
+
+function stateTriggerAt(state) {
+  if (state && state.at) return String(state.at)
+  const a = state && state.action && state.action[0]
+  if (a && typeof a === 'object' && a.at) return String(a.at)
+  return ''
+}
+
 // ---- courseware.json 投影（去渲染字段）----
 function projectNode(state) {
   const node = {
@@ -40,15 +53,176 @@ function projectNode(state) {
   return node
 }
 
+/** 空口播且带 at 的拍，并入上一句口播节点的 action[] 为 {name, at}（引擎 timeline 仍一拍一状态） */
 function buildCourseware(plan) {
+  const timeline = plan.timeline || []
+  const folded = new Set()
+  const nodes = []
+  for (const st of timeline) {
+    const at = stateTriggerAt(st)
+    const host = nodes.length ? nodes[nodes.length - 1] : null
+    const canFold = !!(
+      at &&
+      host &&
+      host.text &&
+      host.type !== 'question' &&
+      !(st.text) &&
+      st.type !== 'question' &&
+      !st.answer_type &&
+      (st.flow_id || 'flow_1') === host.flow_id
+    )
+    if (canFold) {
+      const name = actionName(st.action && st.action[0]) || st.id
+      host.action.push({ name, at })
+      host.next = st.next != null ? st.next : null
+      folded.add(st.id)
+      if (host.text.indexOf(at) < 0) {
+        console.warn('[export] action at 不在口播 text 中: ' + name + ' at="' + at + '" (node ' + host.id + ')')
+      }
+      continue
+    }
+    nodes.push(projectNode(st))
+  }
+  const byId = new Map(timeline.map((s) => [s.id, s]))
+  function remap(id) {
+    let cur = id
+    const seen = new Set()
+    while (cur && folded.has(cur) && !seen.has(cur)) {
+      seen.add(cur)
+      const src = byId.get(cur)
+      cur = src && src.next != null ? src.next : null
+    }
+    return cur && folded.has(cur) ? null : cur
+  }
+  for (const n of nodes) {
+    n.next = remap(n.next)
+    if (n.test && n.test.length) {
+      n.test = n.test.map((t) => Object.assign({}, t, { next: remap(t.next) }))
+    }
+  }
+  const byNodeId = {}
+  for (const n of nodes) byNodeId[n.id] = n
+  for (const n of nodes) {
+    if (!n.test) continue
+    for (const t of n.test) {
+      if (!t || t.next == null) continue
+      const tgt = byNodeId[t.next]
+      if (tgt) tgt.text = ''
+    }
+  }
   return {
     id: plan.courseId || plan.id || '',
     title: plan.title || '',
     child_title: FLOWS.map((f) => ({ title: f.title, flow_id: f.flow_id })),
     problem_source: plan.problem_source || [],
-    nodes: (plan.timeline || []).map(projectNode),
+    nodes,
     globals: []
   }
+}
+
+function markdownRoot() {
+  if (process.env.AICLASS_MARKDOWN) return process.env.AICLASS_MARKDOWN
+  const fallback = path.join(path.parse(root).root, 'markdown', 'AIClass-1')
+  return fs.existsSync(fallback) ? fallback : null
+}
+
+/** 原题 markdown 目录：优先 _output_ 里已放的 .md，否则按 AIClass-1/{grade}-{lesson}/{lesson}-{N}star/ */
+function findProblemMarkdownDir(courseDir, parts) {
+  const hasMd = (dir) => {
+    if (!dir || !fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) return false
+    return fs.readdirSync(dir).some((n) => n.toLowerCase().endsWith('.md'))
+  }
+  if (hasMd(courseDir)) return courseDir
+  const mdRoot = markdownRoot()
+  if (!mdRoot) return null
+  const grade = String(parts.grade)
+  const lesson = String(parts.lesson)
+  const short = lesson + '-' + parts.difficulty + 'star'
+  const leaf = parts.leafId
+  const lessonDir = path.join(mdRoot, grade + '-' + lesson)
+  const candidates = [
+    path.join(lessonDir, short),
+    path.join(lessonDir, leaf),
+    path.join(lessonDir, grade + '-' + lesson + '-' + parts.difficulty + 'star')
+  ]
+  return candidates.find(hasMd) || null
+}
+
+function extractMarkdownImageRefs(mdText) {
+  const refs = []
+  const re = /!\[[^\]]*\]\(([^)]+)\)|<img\b[^>]*\bsrc=["']([^"']+)["']/gi
+  let m
+  while ((m = re.exec(mdText))) {
+    const raw = String(m[1] || m[2] || '').trim().replace(/^<|>$/g, '').split(/\s+/)[0]
+    if (raw) refs.push(raw)
+  }
+  return refs
+}
+
+function copyFileInto(src, dest) {
+  fs.mkdirSync(path.dirname(dest), { recursive: true })
+  fs.copyFileSync(src, dest)
+}
+
+// ---- 原题留档：courseware/problems/ 只放 markdown + 用到的图片（不写 problems.json）----
+// 输入 plan.problem_source（images 可为 [{url,description}] 或纯字符串；url 相对 courseDir）
+// 产出：
+//  - courseware/problems/*.md —— 原题 markdown
+//  - courseware/problems/ 下题干图片（url 与 md 占位符一致，按文件名）
+// 返回 courseware.problem_source.images → [{url, description}]（url 为文件名）
+function archiveProblems(cwDir, courseDir, plan, parts) {
+  const problemsDir = path.join(cwDir, 'problems')
+  fs.mkdirSync(problemsDir, { recursive: true })
+  const missing = []
+
+  const mdDir = findProblemMarkdownDir(courseDir, parts)
+  if (mdDir) {
+    for (const name of fs.readdirSync(mdDir)) {
+      if (!name.toLowerCase().endsWith('.md')) continue
+      const srcMd = path.join(mdDir, name)
+      copyFileInto(srcMd, path.join(problemsDir, name))
+      const mdText = fs.readFileSync(srcMd, 'utf8')
+      for (const ref of extractMarkdownImageRefs(mdText)) {
+        if (/^(https?:|data:)/i.test(ref)) continue
+        const rel = ref.replace(/\\/g, '/')
+        const srcImg = path.join(mdDir, rel)
+        if (fs.existsSync(srcImg) && fs.statSync(srcImg).isFile()) {
+          copyFileInto(srcImg, path.join(problemsDir, rel))
+        } else {
+          missing.push(rel)
+        }
+      }
+    }
+  } else {
+    console.warn('[export] 未找到原题 markdown（_output_ 与 AIClass-1 均无 .md）')
+  }
+
+  const problems = plan.problem_source || []
+  const forCourseware = problems.map((ps) => {
+    const imgs = Array.isArray(ps.images) ? ps.images : []
+    const seen = {}
+    const out = []
+    imgs.forEach((it) => {
+      const url = typeof it === 'string' ? it : (it && it.url != null ? String(it.url) : null)
+      if (!url) return
+      const base = path.basename(url)
+      const src = path.join(courseDir, url)
+      if (fs.existsSync(src)) {
+        copyFileInto(src, path.join(problemsDir, base))
+      } else if (!fs.existsSync(path.join(problemsDir, base))) {
+        missing.push(url)
+      }
+      if (seen[base]) return
+      seen[base] = true
+      const description = it && typeof it === 'object' && it.description != null
+        ? String(it.description)
+        : ''
+      out.push({ url: base, description })
+    })
+    return Object.assign({}, ps, { images: out })
+  })
+  if (missing.length) console.warn('[export] 缺失题干图片（已跳过）: ' + missing.join(', '))
+  return forCourseware
 }
 
 // ---- 生成运行时 lesson 脚本（file:// 兼容：plan 用 JS 包裹）----
@@ -210,13 +384,15 @@ function exportCourse(courseDir) {
     fs.rmSync(legacy, { recursive: true, force: true })
   }
 
-  // 顶层（严格 3 项）：index.html + courseware.json
-  fs.writeFileSync(path.join(out, 'index.html'), generateIndexHtml(plan, courseId))
-  fs.writeFileSync(path.join(out, 'courseware.json'), JSON.stringify(courseware, null, 2) + '\n')
-
-  // courseware/ 运行时包：course.json + plan.json（整体保留）+ assets + runtime + scripts + debug + courseware.js（调试兜底）
+  // courseware/ 运行时包：course.json + plan.json（整体保留）+ problems 原题留档 + assets + runtime + scripts + debug + courseware.js（调试兜底）
   const cwDir = path.join(out, 'courseware')
   fs.mkdirSync(cwDir, { recursive: true })
+
+  // 顶层（严格 3 项）：index.html + courseware.json（problem_source.images → {url, description}）
+  fs.writeFileSync(path.join(out, 'index.html'), generateIndexHtml(plan, courseId))
+  courseware.problem_source = archiveProblems(cwDir, courseDir, plan, parts)
+  fs.writeFileSync(path.join(out, 'courseware.json'), JSON.stringify(courseware, null, 2) + '\n')
+
   fs.writeFileSync(path.join(cwDir, 'course.json'), JSON.stringify({
     schemaVersion: 1,
     courseId: courseId,

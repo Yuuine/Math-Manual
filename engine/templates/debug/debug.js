@@ -39,6 +39,7 @@
   var doneKeys = {}
   var currentKey = null
   var pendingKey = null
+  var lastDispatchedAction = ''
   var courseRootHandle = null
   var saveMode = 'source'
   var portableBase = ''
@@ -359,6 +360,16 @@
 
   function markProgress(actionName) {
     var item = findByActionName(actionName)
+    if (!item && cwNodes.length && actionName) {
+      for (var ni = 0; ni < cwNodes.length; ni++) {
+        if (nodeActionNames(cwNodes[ni]).indexOf(actionName) >= 0) {
+          item = catalog.find(function (c) {
+            return c.catalogKey === cwNodes[ni].id || c.name === nodeActionNames(cwNodes[ni])[0]
+          })
+          break
+        }
+      }
+    }
     var key = item ? itemKey(item) : (pendingKey || actionName)
     if (!key) return
     doneKeys[key] = true
@@ -379,6 +390,7 @@
     doneKeys = {}
     currentKey = null
     pendingKey = null
+    lastDispatchedAction = ''
     updateStepStat()
   }
 
@@ -389,7 +401,45 @@
     }
   }
 
+  function nodeActionNames(node) {
+    if (!node || !node.action) return []
+    return node.action.map(function (entry) {
+      if (typeof entry === 'string') return entry
+      if (entry && entry.name) return String(entry.name)
+      return ''
+    }).filter(Boolean)
+  }
+
   function goNext() {
+    if (cwNodes.length) {
+      var nodeIdx = -1
+      var namePos = -1
+      for (var i = 0; i < cwNodes.length; i++) {
+        var names = nodeActionNames(cwNodes[i])
+        var pos = lastDispatchedAction ? names.indexOf(lastDispatchedAction) : -1
+        if (pos >= 0) {
+          nodeIdx = i
+          namePos = pos
+          break
+        }
+        if (currentKey && (cwNodes[i].id === currentKey)) nodeIdx = i
+      }
+      if (nodeIdx < 0) nodeIdx = 0
+      var curNames = nodeActionNames(cwNodes[nodeIdx])
+      if (namePos >= 0 && namePos < curNames.length - 1) {
+        send(curNames[namePos + 1])
+        return
+      }
+      var nextNode = cwNodes[nodeIdx + 1]
+      if (!nextNode) {
+        setStat('已到最后一步', 'ok')
+        updateStepStat()
+        return
+      }
+      var nextNames = nodeActionNames(nextNode)
+      send(nextNames.length ? nextNames[0] : nextNode.id)
+      return
+    }
     var list = playable()
     if (!list.length) return
     var idx = currentKey
@@ -792,7 +842,9 @@
     }
     if (!dispatchOutbound(name, params)) return
 
+    lastDispatchedAction = name
     if (name === RESET_ACTION) {
+      lastDispatchedAction = ''
       clearProgress()
       renderList()
       return
@@ -1084,6 +1136,7 @@
     if (d.type === 'step_ok') {
       appendLog(d, 'ok')
       var okAction = normalizeActionName(d.action)
+      if (okAction) lastDispatchedAction = okAction
       setStat('step_ok · ' + okAction + ' 已渲染', 'ok')
       markProgress(okAction)
       return

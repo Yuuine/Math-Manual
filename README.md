@@ -57,7 +57,7 @@ Math-Manual/
   "layout": { "type": "left-right", "params": {}, "style": {} },
   "figure": "figure-template-id",          // 图形模板（figure profile）
   "outline": [ { "title": "审题" } ],       // 可选大纲
-  "problem_source": [ { "flow_id": "flow_1", "stem": "…", "answer_short": "…", "answer_detail": "…", "images": [] } ],
+  "problem_source": [ { "flow_id": "flow_1", "stem": "…", "answer_short": "…", "answer_detail": "…", "images": [{ "url": "题1.png", "description": "…" }] } ],
   "timeline": [
     {
       "id": "start", "flow_id": "flow_1", "type": "text",
@@ -88,7 +88,7 @@ Math-Manual/
 
 见 `docs/postmessage-protocol.md`。核心：
 
-- **入站**：`{ action }`（驱动/跳转）、`{ type: 'photo_result', value }`（拍照回显，value 支持 Markdown 子集 + `$…$`/`$$…$$`）
+- **入站**：`{ action, params }`（`params` 无参时为 `{}`）、`{ type: 'photo_result', value }`（拍照回显，value 支持 Markdown 子集 + `$…$`/`$$…$$`）
 - **出站**：`ready`、`step_ok`、`user_submitted`（kind: course_fill/course_choice/course_photo/voice）
 - 父容器从 `courseware.json` 读驱动图（节点：action/type/text/next/test/answer）
 
@@ -103,7 +103,7 @@ npm run compat       # 兼容门禁（Chrome ≥51 / iOS ≥13）
 产物结构（严格 3 项）：
 ```
 dist/{grade}/{lesson}/{grade}-{lesson}-{star}star/   # 例 dist/4/1/4-1-3star
-├── courseware/       # 运行时包（plan.json 整体保留 + runtime + assets + debug）
+├── courseware/       # 运行时包（plan.json 整体保留 + problems 原题留档 + runtime + assets + debug）
 ├── index.html        # 入口
 └── courseware.json   # 父容器驱动图
 ```
