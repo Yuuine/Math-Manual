@@ -52,13 +52,9 @@
       el.setAttribute('data-block-type', block.type || 'unknown')
       el.setAttribute('data-is-current-step', block.__isCurrentStep ? 'true' : 'false')
       applyBlockClass(el, block)
+      // 原地替换（高亮题干等）保持静止，不再播 lf-enter
       el.classList.remove('lf-enter')
       el.style.animationDelay = ''
-      if (runtime.isCurrentStep && !runtime.instant) {
-        el.classList.add('lf-enter')
-        var delay = (block.__localIndex || 0) * 70
-        el.style.animationDelay = delay + 'ms'
-      }
     }
     render(el, block, runtime, ctx || {})
     return el

@@ -28,7 +28,7 @@ Math-Manual/
 │   │                           （JS/CSS 附加层清单：engine-manifest.figure.json + engine-css.figure.json，export 时按 profile 注入）
 ├── profiles/AIClass_text/      text 差异：config.local.js
 ├── _output_/{grade}/{courseId}/  作者真源（作者本地，不入库）：plan.json + assets/ + figure-spec.json
-├── dist/{grade}/{courseId}/      编译产物（严格 3 项：courseware/ · index.html · courseware.json）
+├── dist/{grade}/{lesson}/{grade}-{lesson}-{star}star/  编译产物（如 dist/4/1/4-1-3star）
 ├── tools/                      export.mjs（编译）/ compat-check.mjs（兼容门禁）
 └── vendor/                     katex + jsxgraph
 ```
@@ -40,7 +40,7 @@ Math-Manual/
 3. （图形模板）写 `figure-spec.json`
 4. 放 `assets/`（图片等）
 5. 编译：`node tools/export.mjs [courseId]`
-6. 调试：浏览器打开 `dist/{grade}/{courseId}/courseware/debug.html`
+6. 调试：浏览器打开 `dist/{grade}/{lesson}/{grade}-{lesson}-{star}star/courseware/debug.html`
 
 > 注：`_output_`（作者本地真源）与 `dist/`（编译产物）均在 `.gitignore` 中，不入库。
 
@@ -102,7 +102,7 @@ npm run compat       # 兼容门禁（Chrome ≥51 / iOS ≥13）
 
 产物结构（严格 3 项）：
 ```
-dist/{grade}/{courseId}/
+dist/{grade}/{lesson}/{grade}-{lesson}-{star}star/   # 例 dist/4/1/4-1-3star
 ├── courseware/       # 运行时包（plan.json 整体保留 + runtime + assets + debug）
 ├── index.html        # 入口
 └── courseware.json   # 父容器驱动图
