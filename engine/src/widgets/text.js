@@ -36,17 +36,58 @@
     }
   }
 
-  function renderLine(el, value) {
+  function escapeRegExp(str) {
+    return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  }
+
+  // 按 highlights 子串包 <mark class="lf-text-highlight">；无命中则纯文本
+  function appendHighlightedText(lineEl, text, highlights) {
+    var raw = AIClassWidgetRegistry.text(text)
+    var list = []
+    if (Object.prototype.toString.call(highlights) === '[object Array]') {
+      for (var i = 0; i < highlights.length; i++) {
+        if (highlights[i] != null && String(highlights[i]) !== '') list.push(String(highlights[i]))
+      }
+    }
+    if (!list.length) {
+      lineEl.textContent = raw
+      return
+    }
+    // 长串优先，避免短串先切碎
+    list.sort(function (a, b) { return b.length - a.length })
+    var pattern = list.map(escapeRegExp).join('|')
+    var re = new RegExp('(' + pattern + ')', 'g')
+    var parts = raw.split(re)
+    for (var p = 0; p < parts.length; p++) {
+      var part = parts[p]
+      if (!part) continue
+      var hit = false
+      for (var h = 0; h < list.length; h++) {
+        if (part === list[h]) { hit = true; break }
+      }
+      if (hit) {
+        var mark = document.createElement('mark')
+        mark.className = 'lf-text-highlight'
+        mark.textContent = part
+        lineEl.appendChild(mark)
+      } else {
+        lineEl.appendChild(document.createTextNode(part))
+      }
+    }
+  }
+
+  function renderLine(el, value, highlights) {
     var line = typeof value === 'object' && value ? value : { text: value }
     var tagName = line.block ? 'div' : 'p'
     var lineEl = document.createElement(tagName)
     lineEl.className = 'lf-text-line' + (line.role ? ' lf-text-' + line.role : '')
     var content = line.text != null ? line.text : line.value
+    var lineHighlights = line.highlights != null ? line.highlights : highlights
     if (line.html) {
       lineEl.innerHTML = AIClassWidgetRegistry.text(content)
       hydrateImages(lineEl)
     } else {
-      lineEl.textContent = AIClassWidgetRegistry.text(content)
+      appendHighlightedText(lineEl, content, lineHighlights)
     }
     el.appendChild(lineEl)
   }
@@ -64,7 +105,8 @@
       el.classList.add('lf-text--hang-after-tag')
     }
     var lines = block.lines || (block.text ? [block.text] : [])
-    lines.forEach(function (line) { renderLine(el, line) })
+    var highlights = block.highlights || null
+    lines.forEach(function (line) { renderLine(el, line, highlights) })
     if (window.AIClassLatex && (block.region === 'top' || /\bstem\b/.test(String(block.class || '')))) {
       window.AIClassLatex.render(el)
     }
@@ -91,6 +133,8 @@
       lead.className = 'lf-section-lead'
       if (block.leadHtml) {
         lead.innerHTML = AIClassWidgetRegistry.text(block.lead)
+      } else if (block.highlights && block.highlights.length) {
+        appendHighlightedText(lead, block.lead, block.highlights)
       } else {
         lead.textContent = block.lead
       }

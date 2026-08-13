@@ -168,6 +168,17 @@
   font-weight: 800;
 }
 
+.course-container .lf-text-highlight {
+  display: inline;
+  padding: 0.05em 0.2em;
+  margin: 0 0.05em;
+  border-radius: 0.25rem;
+  background: var(--lf-highlight, rgba(255, 214, 76, 0.45));
+  color: inherit;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
 .course-container .lf-solve-answer-highlight {
   display: inline-block;
   margin: 0 0.125rem;

@@ -592,8 +592,15 @@
     }
 
     var anchor = null
-    if (appended && appended.length) anchor = appended[appended.length - 1]
-    followContent(anchor, instant)
+    if (appended && appended.length) {
+      for (var ai = appended.length - 1; ai >= 0; ai--) {
+        var node = appended[ai]
+        if (node && node.getAttribute && node.getAttribute('data-block-replaced') === 'true') continue
+        anchor = node
+        break
+      }
+    }
+    if (anchor) followContent(anchor, instant)
 
     currentIndex = index
 

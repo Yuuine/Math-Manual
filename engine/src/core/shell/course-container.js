@@ -302,7 +302,7 @@
       var existingEl = replaceKey ? findReplaceKeyBlock(self, replaceKey, target) : null
       var renderCtx = {
         config: ctx.config || {},
-        instant: ctx.instant === true,
+        instant: ctx.instant === true || !!existingEl,
         currentStepId: ctx.stepId,
         runner: ctx.runner || null
       }
@@ -323,6 +323,7 @@
         if (replaceKey) el.setAttribute('data-replace-key', replaceKey)
         if (block.__stepId != null) el.setAttribute('data-step-id', block.__stepId)
         el.setAttribute('data-is-current-step', block.__isCurrentStep ? 'true' : 'false')
+        el.setAttribute('data-block-replaced', 'true')
         out.push(el)
         return
       }

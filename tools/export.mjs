@@ -1,20 +1,19 @@
 #!/usr/bin/env node
-// 编译导出：master plan.json → dist/{grade}/{courseId}/courseware/（参照 templates 产物结构）
+// 编译导出：master plan.json → dist/{grade}/{lesson}/{grade}-{lesson}-{star}star/
 //  - 双投影 courseware.json（父容器驱动图：去渲染字段 + problem_source）
 //  - 装配 runtime/（lesson 生成脚本 + engine src + vendor）
 //  - master plan.json 整体保留
-// 用法：node tools/export.mjs [courseId]（默认扫描 courses/ 全部）
+// 用法：node tools/export.mjs [courseId]（默认扫描 _output_ 全部）
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execSync } from 'node:child_process'
+import { distRoot, outputRoot, resolveDistParts } from './output-paths.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.resolve(__dirname, '..')
-const outputRoot = path.join(root, '_output_')
 const engineSrc = path.join(root, 'engine', 'src')
 const vendorSrc = path.join(root, 'vendor')
-const distRoot = path.join(root, 'dist')
 
 const FLOWS = [
   { flow_id: 'flow_1', title: '学习例题的解题思路' },
@@ -189,14 +188,27 @@ function exportCourse(courseDir) {
   const planPath = path.join(courseDir, 'plan.json')
   if (!fs.existsSync(planPath)) throw new Error('缺少 ' + planPath)
   const plan = JSON.parse(fs.readFileSync(planPath, 'utf8'))
-  const courseId = plan.courseId || plan.id || path.basename(courseDir)
-  const grade = plan.grade != null ? String(plan.grade) : '0'
+  const parts = resolveDistParts(plan, courseDir)
+  const grade = parts.grade
+  const lesson = parts.lesson
+  const leafId = parts.leafId
+  const sourceCourseId = plan.courseId || plan.id || path.basename(courseDir)
+  const courseId = leafId
   const profile = plan.profile || 'AIClass_text'
+  plan.courseId = courseId
+  plan.lesson = lesson
 
   const courseware = buildCourseware(plan)
-  const out = path.join(distRoot, grade, courseId)
+  courseware.id = courseId
+  const out = parts.out
   fs.rmSync(out, { recursive: true, force: true })
   fs.mkdirSync(out, { recursive: true })
+
+  // 清理旧布局 dist/{grade}/{旧courseId}/
+  const legacy = path.join(distRoot, grade, sourceCourseId)
+  if (legacy !== out && fs.existsSync(legacy)) {
+    fs.rmSync(legacy, { recursive: true, force: true })
+  }
 
   // 顶层（严格 3 项）：index.html + courseware.json
   fs.writeFileSync(path.join(out, 'index.html'), generateIndexHtml(plan, courseId))
@@ -235,7 +247,7 @@ function exportCourse(courseDir) {
   // 调试壳：courseware/debug.html（+ debug.css + debug.js）
   copyTree(path.join(root, 'engine', 'templates', 'debug'), cwDir)
 
-  return { courseId, grade, profile, out }
+  return { courseId, grade, lesson, profile, out }
 }
 
 // ---- 主流程：扫描 _output_/{grade}/{courseId}/plan.json ----
@@ -270,7 +282,7 @@ const exported = []
 for (const dir of targets) {
   const r = exportCourse(dir)
   exported.push(r)
-  console.log(`[export] ${r.courseId} (grade ${r.grade}, profile ${r.profile}) -> ${r.out}`)
+  console.log(`[export] ${r.courseId} (grade ${r.grade}, lesson ${r.lesson}, profile ${r.profile}) -> ${r.out}`)
 }
 
 // 兼容门禁（Chrome ≥51 / iOS ≥13）
