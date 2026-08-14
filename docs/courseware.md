@@ -12,7 +12,7 @@
 | `id` | 课件标识（例 `4-1-2star`） |
 | `title` | 课件标题 |
 | `child_title` | 固定三条 flow：学习例题 / 快速复习 / 自己练习，父容器据此分组 |
-| `problem_source` | 每题一条原题留档；`images` 为 `[{url, description}]`。原题 markdown 与图片在 `courseware/problems/` |
+| `problem_source` | 每题一条原题留档；`images` 为 `[{url, description}]`。原题 markdown 与图片在 `problem/` |
 | `nodes` | 链表式驱动图（主链三段 flow 连续），父容器逐个下发 action |
 | `globals` | 固定空 |
 
@@ -43,12 +43,12 @@
 - `name` —— 要下发的 action（整体流程的下一个 action，制作时按流程线性排列）
 - `at` —— 口播触发点（父容器指令）：口播读到该子串时下发 `{ "action": "例-审题", "params": {} }`
 
-## 原题留档（courseware/problems/）
+## 原题留档（problem/）
 
 只放原题 markdown 和题干用到的图片（不写 `problems.json`）。`courseware.json` 的 `images` 与原项目一致：`{ url, description }`。
 
 ```
-courseware/problems/
+problem/
 ├── 1-3star.md      # 原题 markdown（`![](文件名.png)` 与 url 一致）
 └── 题1.png         # 用到的图片
 ```
@@ -61,7 +61,7 @@ courseware/problems/
 
 - **`url`**：与正文 `![](文件名.png)` 完全一致的文件名（无路径）；无图写 `[]`
 - **`description`**：该图的文字描述；同图在题干/解析重复出现时 `images` 只登记一条
-- 图片实体按 `url` 放在 `courseware/problems/`
+- 图片实体按 `url` 放在 `problem/`
 
 ## 完整示例
 

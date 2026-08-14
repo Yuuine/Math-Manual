@@ -20,7 +20,7 @@
 }
 
 .course-container .lf-text-line {
-  font-size: var(--cc-body-size, var(--lf-body-size, 1.75rem));
+  font-size: var(--cc-body-size, var(--lf-body-size));
   line-height: var(--cc-line-height, var(--lf-line-height, 1.58));
   margin: 0 0 0.5rem;
 }
@@ -44,7 +44,7 @@
   display: inline-block;
   margin: 0;
   padding: 0 0.125rem;
-  font-size: calc(var(--cc-body-size, 1.75rem) * 1.06);
+  font-size: 1.06em;
   font-weight: 800;
   line-height: 1.18;
   background: var(--marker-pink-bg);
@@ -71,7 +71,7 @@
   border: 1px solid rgba(37, 99, 235, 0.45);
   background: rgba(37, 99, 235, 0.1);
   color: #1d4ed8;
-  font-size: calc(var(--cc-body-size, var(--lf-body-size, 1.75rem)) * 0.78);
+  font-size: 0.78em;
   font-weight: 700;
   letter-spacing: 0.04em;
   box-sizing: border-box;
@@ -125,20 +125,18 @@
 .course-container .lf-section-lead {
   flex: 1 1 0;
   min-width: 0;
-  font-size: var(--cc-body-size, var(--lf-body-size, 1.75rem));
+  font-size: var(--cc-body-size, var(--lf-body-size));
   line-height: var(--cc-line-height, var(--lf-line-height, 1.58));
   font-weight: 400;
 }
 
 /* interleaved 引导槽内 section tag/lead 随槽位字号缩放（text 模板独有规则，合并时补回） */
 .course-container[data-guidance-layout="interleaved"] .cc-guide-slot .lf-section-tag {
-  font-size: calc(var(--cc-guide-slot-size, 1.5rem) * 0.78);
+  font-size: 0.78em;
   min-height: 1.5rem;
   padding: 0.0625rem 0.5rem;
 }
-.course-container[data-guidance-layout="interleaved"] .cc-guide-slot .lf-section-lead {
-  font-size: var(--cc-guide-slot-size, 1.5rem);
-}
+/* 槽内 lead 继承槽字号（= slot-size 0.92×body） */
 
 .course-container .lf-block.lf-text--hang-after-tag {
   display: block;
@@ -163,17 +161,20 @@
 
 .course-container .lf-solve-title {
   color: var(--cc-ink, var(--lf-ink));
-  font-size: var(--cc-body-size, var(--lf-body-size, 1.75rem));
+  font-size: var(--cc-body-size, var(--lf-body-size));
   line-height: var(--cc-line-height, var(--lf-line-height, 1.58));
   font-weight: 800;
 }
 
 .course-container .lf-text-highlight {
   display: inline;
-  padding: 0.05em 0.2em;
-  margin: 0 0.05em;
-  border-radius: 0.25rem;
   background: var(--lf-highlight, rgba(255, 214, 76, 0.45));
+  border-radius: 0.25rem;
+  /* 记号笔外扩用 box-shadow 模拟：不占布局空间，高亮不会右推文本（留白会位移） */
+  box-shadow: -0.2em 0 0 0 var(--lf-highlight, rgba(255, 214, 76, 0.45)),
+              0.2em 0 0 0 var(--lf-highlight, rgba(255, 214, 76, 0.45)),
+              0 -0.05em 0 0 var(--lf-highlight, rgba(255, 214, 76, 0.45)),
+              0 0.05em 0 0 var(--lf-highlight, rgba(255, 214, 76, 0.45));
   color: inherit;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;

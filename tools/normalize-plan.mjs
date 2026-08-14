@@ -6,11 +6,12 @@
 //  - 【短语】→ 先出全文再逐步 highlights[]
 //  - 含「｜」的多行表按行累加拆拍
 //  - flow_2 正文 fill → 顶部 quickQA 夹层（question/answer/close）
-//  - 练习进容器先拍照作答，再审题（不要挂在练习-action2）
+//  - 练习进容器先出题干，再拍照作答，再审题（拍照步插在题干步之后，不抢最前）
 //  - 「已知/求/问」开头的正文 → section 标签 + lead
 // 用法：node tools/normalize-plan.mjs <plan.json>
 import fs from 'node:fs'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const INTERACTIVE = new Set(['choice', 'oral'])
 const SPLIT_TYPES = new Set(['choice', 'oral'])
@@ -200,7 +201,16 @@ function makeRevealBlocks(askBlocks, fullDeltaBlocks) {
   return out
 }
 
-function insertPracticePhotoFirst(states, maps) {
+// 练习流解耦：题干 → 拍照 → 审题。
+// 目标结构（练习容器）：
+//   1. 题干步：只显示题干（blocks=[stem]），带 head+outline（guide panel 靠它挂载），
+//      outlineIndex 缺省 → 引导链收起（第一步不显示审题）。
+//   2. 拍照步：题干 + 相机（course_photo），outlineIndex 缺省 → 引导链仍收起。
+//   3. 审题步：outlineIndex=0 激活审题引导节 + 内容。
+// 兼容两种源结构：
+//   - first 只有题干（如 7-1-4star 练-开始）：复用为题干步，去掉其 outlineIndex，拍照插其后；
+//   - first 含题干+内容（如 4-1-3star 练-审题）：拆出题干步，first 留作审题步，拍照插中间。
+function decouplePracticePhoto(states, maps) {
   const firstIdx = states.findIndex((s) => s && containerIdx(s, maps) > 0)
   if (firstIdx < 0) return states
   const practiceIdx = containerIdx(states[firstIdx], maps)
@@ -210,8 +220,38 @@ function insertPracticePhotoFirst(states, maps) {
   const first = rest.find((s) => s && containerIdx(s, maps) === practiceIdx)
   if (!first) return states
 
-  const stem = (first.blocks || []).find((b) =>
-    b && (b.region === 'top' || /\bstem\b/.test(String(b.class || ''))))
+  const isStem = (b) => b && (b.region === 'top' || /\bstem\b/.test(String(b.class || '')))
+  const stem = (first.blocks || []).find(isStem)
+  const content = (first.blocks || []).filter((b) => !isStem(b))
+
+  // 题干步：无 outlineIndex → 引导链收起，只显示题干
+  let stemStep
+  if (content.length === 0) {
+    // first 已是题干步（只含题干）：复用，去掉 outlineIndex
+    stemStep = first
+    delete stemStep.outlineIndex
+  } else {
+    // first 是审题步（含内容）：拆出题干步；first 留作审题步（outlineIndex=0 激活审题）
+    stemStep = {
+      id: (first.id || 'pr') + '-stem',
+      flow_id: first.flow_id,
+      type: 'text',
+      head: first.head || '练',
+      text: '',
+      action: ['练-题干'],
+      next: null,
+      test: [],
+      outline: first.outline || undefined,
+      figureTemplate: first.figureTemplate,
+      figureState: first.figureState != null ? deepClone(first.figureState) : undefined,
+      blocks: stem ? [deepClone(stem)] : []
+    }
+  }
+  if (content.length > 0 && first.outline && first.outline.length && first.outlineIndex == null) {
+    first.outlineIndex = 0
+  }
+  if (first.head == null) first.head = '练'
+
   const photo = existingPhoto ? deepClone(existingPhoto) : {}
   const photoId = photo.id || 'p-photo'
   photo.id = photoId
@@ -220,11 +260,9 @@ function insertPracticePhotoFirst(states, maps) {
   photo.head = first.head || '练'
   photo.text = ''
   photo.action = ['练习-作答-拍照']
-  photo.next = first.id
-  photo.test = [
-    { when: true, next: first.id },
-    { when: false, next: first.id }
-  ]
+  // course_photo 无判题：test 留空，next 由 relink 指向拍照后一步（题干步结构=审题，拆分布=审题步）
+  photo.next = null
+  photo.test = []
   photo.question_type = 'practice_main'
   photo.answer_type = 'course_photo'
   photo.answer = []
@@ -233,11 +271,17 @@ function insertPracticePhotoFirst(states, maps) {
   delete photo._sections
   if (first.outline) photo.outline = first.outline
   else delete photo.outline
-  delete first.head
-  delete first.outline
+  if (first.figureTemplate) photo.figureTemplate = first.figureTemplate
+  if (first.figureState != null) photo.figureState = deepClone(first.figureState)
 
   const insertAt = rest.indexOf(first)
-  rest.splice(insertAt, 0, photo)
+  if (content.length === 0) {
+    // 题干步 → 拍照 →（后续审题步）
+    rest.splice(insertAt + 1, 0, photo)
+  } else {
+    // 题干步 → 拍照 → 审题步(first)
+    rest.splice(insertAt, 0, stemStep, photo)
+  }
   return rest
 }
 
@@ -613,7 +657,7 @@ function normalizePlan(plan) {
         st.outline = st.outline.map((o) => ({ title: stripSectionNumber(o.title), desc: '' }))
       }
     })
-    out.timeline = blankTestTargetTexts(relink(insertPracticePhotoFirst(
+    out.timeline = blankTestTargetTexts(relink(decouplePracticePhoto(
       out.timeline || [],
       buildFlowContainerMap(out)
     )))
@@ -732,7 +776,7 @@ function normalizePlan(plan) {
     expanded.push(plain)
   }
 
-  out.timeline = blankTestTargetTexts(relink(insertPracticePhotoFirst(expanded, maps)))
+  out.timeline = blankTestTargetTexts(relink(decouplePracticePhoto(expanded, maps)))
   out.textAccumulate = out.textAccumulate !== false
   out.guidanceLayout = out.guidanceLayout || 'interleaved'
   return out
@@ -777,4 +821,7 @@ function main() {
   console.log('[normalize] 写出', planPath)
 }
 
-main()
+export { normalizePlan }
+
+const isMain = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+if (isMain) main()

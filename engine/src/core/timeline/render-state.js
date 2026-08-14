@@ -238,12 +238,13 @@
     return topBlocks.concat(bodyBlocks)
   }
 
-  function syncStemHeadLabel(state, meta) {
+  // 顶栏题干标签：仅在状态显式指定 head 时同步。
+  // 容器标签在创建时已由 buildHostMeta 定下（首容器=plan 级 head，练习容器=seed 状态 head='练'）；
+  function syncStemHeadLabel(state) {
     if (!container || !container.scrollEl) return
-    var head = state && state.head != null ? state.head : (meta && meta.head)
-    if (head == null) return
+    if (!state || state.head == null) return
     var label = container.scrollEl.querySelector('.course-stem-head .course-label')
-    if (label) label.textContent = String(head)
+    if (label) label.textContent = String(state.head)
   }
 
   function followContent(anchorEl, instant) {
@@ -556,7 +557,7 @@
         if (!isForward) blocks = orderTopThenBody(blocks)
         appended = container.appendBlocks(blocks, appendOpts(state, instant, isForward)) || []
       }
-      syncStemHeadLabel(state, meta)
+      syncStemHeadLabel(state)
     }
 
     if (resolveQaOp(state)) {
@@ -567,16 +568,24 @@
       applyContainerChrome(container, state, instant, isForward)
     }
 
+    // 揭示锚点：正文滚动区内的最后一个新/替换块。
+    // 顶栏题干（scroll-top）不是滚动目标——原位重渲染题干不该引起滚动。
     var anchor = null
     if (appended && appended.length) {
       for (var ai = appended.length - 1; ai >= 0; ai--) {
         var node = appended[ai]
-        if (node && node.getAttribute && node.getAttribute('data-block-replaced') === 'true') continue
+        if (!node || !container.scrollStackEl) continue
+        var inBody = container.scrollStackEl === node ||
+          container.scrollStackEl.contains(node) ||
+          !!(container.scrollRightEl && container.scrollRightEl.contains(node))
+        if (!inBody) continue
         anchor = node
         break
       }
     }
-    if (anchor) followContent(anchor, instant)
+    // 有新容器待对齐（pendingAlignStart）时，即使无正文 anchor（如仅顶栏题干）
+    // 也要触发 follow——让外层滚到新容器顶部，否则新容器停在视口外不出现
+    if (anchor || pendingAlignStart) followContent(anchor, instant)
 
     currentIndex = index
 

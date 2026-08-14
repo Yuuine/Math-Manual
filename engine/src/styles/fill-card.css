@@ -9,7 +9,7 @@
   background: #fff;
   display: flex;
   flex-direction: column;
-  font-size: var(--cc-body-size, var(--lf-body-size, 1.75rem)); /* 28px 回退 */
+  font-size: var(--cc-body-size, var(--lf-body-size));
   line-height: 1.45;
   color: var(--cc-ink, #0f172a);
 }
@@ -18,9 +18,7 @@
   border-color: #d1d5db;
 }
 
-.course-container[data-guidance-layout="interleaved"] .cc-guide-slot .lf-fill-card {
-  font-size: var(--cc-guide-slot-size);
-}
+/* 引导槽内填空卡片继承槽字号（= slot-size 0.92×body） */
 
 .course-container .lf-fill-card .lf-fill-row {
   display: flex;

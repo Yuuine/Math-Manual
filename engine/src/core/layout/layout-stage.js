@@ -38,7 +38,7 @@
     stage.style.transform = 'none'
     stage.style.transformOrigin = 'top left'
 
-    // 兼容变量固定 1/0：scroll-index / mathlive / viewport-scale 走 no-op
+    // 兼容变量固定 1/0：mathlive / viewport-scale 走 no-op
     document.documentElement.style.setProperty('--lf-board-scale', '1')
     document.documentElement.style.setProperty('--lf-board-offset-x', '0px')
     document.documentElement.style.setProperty('--lf-board-offset-y', '0px')

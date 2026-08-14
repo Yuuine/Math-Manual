@@ -7,7 +7,7 @@
 - **统一基础**：`engine/` 收录两模板（图形 / 文本）100% 共有内容——组件、widget、样式、会话、容器、滚动。
 - **两个 profile**：`AIClass_figure`（左图右文 + JSXGraph 图形）、`AIClass_text`（单栏纯文本）。差异仅是「图的展示部分」。
 - **父容器驱动**：课件完全由父容器下发 `action` 驱动；每个 action = 时间线一个状态。
-- **编译产出**：`tools/export.mjs` 把 `_output_` 的手写 plan.json 装配成发布包（严格 3 项产物结构）。
+- **编译产出**：`tools/export.mjs` 把 `_output_` 的手写 plan.json 装配成发布包（顶层 4 项产物结构）。
 - **作者真源不入库**：`_output_` 是作者本地维护课件的主编排源（plan.json + assets + figure-spec.json）。它属于使用方内容、不属于模板仓库，整体写入 `.gitignore`；本仓库只收录框架（engine / profiles / tools / vendor / docs）。
 - **兼容约束**：运行时遵循 Chrome ≥51 / iOS ≥13（见 `COMPATIBILITY.md`）；导出时跑兼容门禁。
 
@@ -100,10 +100,11 @@ npm run export       # 编译 _output_ 全部课件 → dist
 npm run compat       # 兼容门禁（Chrome ≥51 / iOS ≥13）
 ```
 
-产物结构（严格 3 项）：
+产物结构（顶层 4 项）：
 ```
 dist/{grade}/{lesson}/{grade}-{lesson}-{star}star/   # 例 dist/4/1/4-1-3star
-├── courseware/       # 运行时包（plan.json 整体保留 + problems 原题留档 + runtime + assets + debug）
+├── courseware/       # 运行时包（plan.json 整体保留 + runtime + assets + debug）
+├── problem/          # 原题留档（markdown + 题干图片）
 ├── index.html        # 入口
 └── courseware.json   # 父容器驱动图
 ```
@@ -111,3 +112,5 @@ dist/{grade}/{lesson}/{grade}-{lesson}-{star}star/   # 例 dist/4/1/4-1-3star
 ## 兼容性
 
 运行时浏览器代码遵循 `COMPATIBILITY.md`（基线 Chrome 51 / iOS 13）：禁用 CSS 特性（grid/gap/sticky/:has()/aspect-ratio/clamp 等）、禁用 Web API、脚本**纯 ES5**、rem 单位、热区 ≥44px。CI（PR→main）跑兼容门禁。
+
+通用约定与设计规范（含字号与排版体系）见 [`CONVENTIONS.md`](./CONVENTIONS.md)。

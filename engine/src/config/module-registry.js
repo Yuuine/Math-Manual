@@ -62,14 +62,6 @@
     return null
   }
 
-  function resolveConceptSheetConfig(entry) {
-    if (!entry) return null
-    if (window.AIClassConceptSheetResolver && AIClassConceptSheetResolver.resolveSheetEntry) {
-      return AIClassConceptSheetResolver.resolveSheetEntry(entry)
-    }
-    return null
-  }
-
   window.AIClassModuleRegistry = {
     data: registry,
     get modules() { return registry.modules },
@@ -80,7 +72,6 @@
     getModule: getModule,
     scrollPlan: scrollPlan,
     conceptSheetByAction: conceptSheetByAction,
-    resolveConceptSheetConfig: resolveConceptSheetConfig,
     get conceptSheetCloseAction() { return registry.conceptSheetCloseAction || '插播_关闭' },
     get conceptSheets() { return registry.conceptSheets || [] }
   }

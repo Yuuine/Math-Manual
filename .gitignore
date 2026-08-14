@@ -16,6 +16,7 @@ _output_/
 .reasonix/
 .codex/
 .opencode/
+.agent/
 *.code-workspace
 .DS_Store
 Thumbs.db
@@ -25,3 +26,4 @@ Desktop.ini
 *.log
 npm-debug.log*
 *.tmp
+/dist_origin/

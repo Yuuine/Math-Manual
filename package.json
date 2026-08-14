@@ -10,9 +10,10 @@
   "scripts": {
     "compat": "node tools/compat-check.mjs engine",
     "export": "node tools/export.mjs",
-    "test": "node --test tools/tests/"
+    "test": "node --test \"tools/tests/*.test.mjs\""
   },
   "dependencies": {
+    "acorn": "^8.18.0",
     "doiuse": "^6.0.0",
     "postcss": "^8.4.0"
   }

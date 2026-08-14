@@ -12,7 +12,7 @@
   border: 1px solid #cbd5e1;
   border-radius: 0.625rem; /* 10px */
   background: #fff;
-  font-size: var(--cc-body-size, var(--lf-body-size, 1.75rem)); /* 28px 回退 */
+  font-size: var(--cc-body-size, var(--lf-body-size));
   line-height: 1.45;
   color: var(--cc-ink, var(--lf-ink, #0f172a));
 }
@@ -46,7 +46,7 @@
   border: 1px dashed rgba(106, 76, 156, 0.48);
   background: rgba(106, 76, 156, 0.1);
   color: #6a4c9c;
-  font-size: calc(var(--cc-body-size, var(--lf-body-size, 1.75rem)) * 0.78); /* 28px 回退 */
+  font-size: 0.78em;
   font-weight: 700;
   letter-spacing: 0.04em;
 }
@@ -58,7 +58,7 @@
 }
 
 .aic-oral-card__question.lf-text-lead {
-  font-size: calc(var(--cc-body-size, var(--lf-body-size, 1.75rem)) * 1.12); /* 28px 回退 */
+  font-size: 1.12em;
   line-height: 1.5;
   font-weight: 400;
 }
@@ -84,7 +84,7 @@
   padding: 0;
   border: none;
   background: transparent;
-  font-size: var(--cc-guide-meta-size, calc(var(--cc-body-size, 1.75rem) * 0.88)); /* 28px 回退 */
+  font-size: var(--cc-guide-meta-size, 0.88em);
   line-height: 1.45;
 }
 
@@ -96,11 +96,7 @@
   font-size: 0.78em;
 }
 
-/* 穿插大纲槽位：口答卡片随互动区缩小 */
-.course-container[data-guidance-layout="interleaved"] .cc-guide-slot .aic-oral-card {
-  font-size: var(--cc-guide-slot-size);
-}
-
+/* 穿插大纲槽位：口答卡片继承槽字号（= slot-size 0.92×body） */
 .course-container[data-guidance-layout="interleaved"] .cc-guide-slot .aic-oral-card__badge {
   font-size: 0.78em;
 }

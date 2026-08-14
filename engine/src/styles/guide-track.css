@@ -3,16 +3,30 @@
    tokens 缺省随 body-size 派生，profile 可覆盖。 */
 
 .course-container[data-guidance-layout="interleaved"] {
-  --cc-guide-title-size: calc(var(--cc-body-size, 1.5rem) * 0.92);
-  --cc-guide-desc-size: calc(var(--cc-body-size, 1.5rem) * 0.78);
-  --cc-guide-slot-size: calc(var(--cc-body-size, 1.5rem) * 0.92);
+  /* 引导字号统一 em 派生：面板 rebase 到 body-size，各 token 为 body 的 em 因子 */
+  --cc-guide-title-size: 0.92em;
+  --cc-guide-desc-size: 0.78em;
+  --cc-guide-slot-size: 0.92em;
   /* 轨道列：圆点 + 竖茎同属 .cc-guide-track，共用下列 token */
   --cc-guide-track-width: 1.375rem;
   --cc-guide-dot-left: 0.375rem;
   --cc-guide-dot-size: 0.5rem;
-  --cc-guide-dot-top: 0.875rem;
+  --cc-guide-dot-half: 0.25rem; /* dot-size/2；Chrome51 无 calc 乘除，预计算 */
   --cc-guide-rail-width: 0.125rem;
-  --cc-guide-rail-x: calc(var(--cc-guide-dot-left) + var(--cc-guide-dot-size) / 2 - var(--cc-guide-rail-width) / 2);
+  --cc-guide-rail-half: 0.0625rem; /* rail-width/2（1px） */
+  /* 圆点纵向定位：由排版派生，不硬编码。
+     几何：dot-top = section-pad-top + node-pad-top + (title-size×lh − dot-size)/2
+     Chrome51 calc 仅支持 + −，用 em 派生：.cc-guide-track font-size=title-size，
+     则 0.675em = title-size × 0.675（0.675 = title-lh 1.35 / 2）。
+     dot-top = 0.25 + 0.375 − 0.25 + 0.675em = 0.375rem + 0.675em */
+  --cc-guide-section-pad-top: 0.25rem;
+  --cc-guide-node-pad-top: 0.375rem;
+  --cc-guide-title-lh: 1.35;
+  --cc-guide-dot-top: calc(
+    var(--cc-guide-section-pad-top) + var(--cc-guide-node-pad-top)
+    - var(--cc-guide-dot-half) + 0.675em
+  );
+  --cc-guide-rail-x: calc(var(--cc-guide-dot-left) + var(--cc-guide-dot-half) - var(--cc-guide-rail-half));
   --cc-guide-rail-image: linear-gradient(to bottom, rgba(22, 163, 74, 0.7) 55%, transparent 55%);
   --cc-guide-rail-size: 2px 10px;
 }
@@ -20,6 +34,8 @@
 .course-container[data-guidance-layout="interleaved"] .cc-guide-panel {
   position: relative;
   margin: 0.35em 0 0.75em;
+  /* 引导字号锚点：rebase 到正文，内部 token 均以 em 相对本字号 */
+  font-size: var(--cc-body-size, var(--lf-body-size));
 }
 
 .course-container[data-guidance-layout="interleaved"] .cc-guide-panel.cc-guide-panel--collapsed {
@@ -42,7 +58,7 @@
 
 .course-container[data-guidance-layout="interleaved"] .cc-guide-section {
   z-index: 2;
-  padding-top: 0.25rem;
+  padding-top: var(--cc-guide-section-pad-top);
   padding-bottom: 0.375rem;
 }
 
@@ -54,16 +70,19 @@
 .course-container[data-guidance-layout="interleaved"] .cc-guide-slot {
   padding-top: 0.125rem;
   padding-bottom: 0.625rem;
+  /* 槽字号 = slot-size（0.92×body），槽内内容全部继承 */
   font-size: var(--cc-guide-slot-size);
 }
 
-/* 轨道列绝对贴满父级高度：圆点+竖茎同轨，不靠 grid 跨行 */
+/* 轨道列绝对贴满父级高度：圆点+竖茎同轨，不靠 grid 跨行。
+   font-size 供 dot-top 的 0.675em 相对 title-size 缩放 */
 .course-container[data-guidance-layout="interleaved"] .cc-guide-track {
   position: absolute;
   left: 0;
   top: 0;
   bottom: 0;
   width: var(--cc-guide-track-width);
+  font-size: var(--cc-guide-title-size);
   pointer-events: none;
 }
 
@@ -101,7 +120,7 @@
 /* 首环：从圆点中心向下；末环：从顶接到圆点中心；中间环全高。圆点盖在茎上 */
 .course-container[data-guidance-layout="interleaved"]
   .cc-guide-section.is-rail-start:not(.is-rail-end) > .cc-guide-track > .cc-guide-stem {
-  top: calc(var(--cc-guide-dot-top) + var(--cc-guide-dot-size) / 2);
+  top: calc(var(--cc-guide-dot-top) + var(--cc-guide-dot-half));
   bottom: 0;
 }
 
@@ -109,7 +128,7 @@
   .cc-guide-section.is-rail-end:not(.is-rail-start) > .cc-guide-track > .cc-guide-stem {
   top: 0;
   bottom: auto;
-  height: calc(var(--cc-guide-dot-top) + var(--cc-guide-dot-size) / 2);
+  height: calc(var(--cc-guide-dot-top) + var(--cc-guide-dot-half));
 }
 
 .course-container[data-guidance-layout="interleaved"]

@@ -10,7 +10,7 @@
 
   // 题干固定 + 正文内滚：单题时锁 stage，多题叠放时解锁 stage 仅用于换题翻页
   function isInnerBodyScrollLayout(layout) {
-    return layout === 'left-right' || layout === 'top-split' || layout === 'text-only'
+    return layout === 'left-right' || layout === 'text-only'
   }
 
   function lockStageForInnerBodyScroll() {

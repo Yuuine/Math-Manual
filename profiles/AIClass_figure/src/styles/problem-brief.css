@@ -44,7 +44,7 @@
   display: flex;
   align-items: flex-start;
   color: #1e293b;
-  font-size: calc(var(--cc-body-size, 1.75rem) * 0.82);
+  font-size: 0.82em;
   line-height: 1.42;
 }
 .cc-problem-brief__row > * + * {

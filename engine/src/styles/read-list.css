@@ -12,7 +12,7 @@
 }
 
 .course-container .lf-read-line {
-  font-size: var(--cc-body-size, var(--lf-body-size, 1.5rem)); /* 24px 回退 */
+  font-size: var(--cc-body-size, var(--lf-body-size));
   line-height: var(--cc-line-height, var(--lf-line-height, 1.58));
 }
 

@@ -73,7 +73,7 @@
 }
 
 .qa-bubble-question {
-  font-size: calc(var(--cc-body-size, 1.5rem) * 1.08); /* 24px 回退 */
+  font-size: 1.08em;
   font-weight: 600;
   line-height: 1.55;
   color: #1e293b;
@@ -82,7 +82,7 @@
 }
 
 .qa-bubble-answer {
-  font-size: calc(var(--cc-body-size, 1.5rem) * 1.08); /* 24px 回退 */
+  font-size: 1.08em;
   font-weight: 700;
   line-height: 1.55;
   color: #16a34a;
@@ -207,12 +207,12 @@
   border-radius: 62.4375rem; /* 999px */
   background: #fef3c7;
   color: #92400e;
-  font-size: calc(var(--cc-body-size, 1.75rem) * 0.88); /* 28px 回退 */
+  font-size: 0.88em;
   font-weight: 700;
   line-height: 1.4;
 }
 .qa-layer-question {
-  font-size: calc(var(--cc-body-size, 1.75rem) * 1.04); /* 28px 回退 */
+  font-size: 1.04em;
   line-height: 1.5;
   color: var(--cc-ink);
   flex: 1;
@@ -221,7 +221,7 @@
 }
 .qa-layer-answer {
   margin-left: 2em;
-  font-size: calc(var(--cc-body-size, 1.75rem) * 1.04); /* 28px 回退 */
+  font-size: 1.04em;
   line-height: 1.5;
   color: #059669;
   font-weight: 700;

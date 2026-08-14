@@ -14,7 +14,6 @@
     'bridge/courseware-submit.js',
     'core/session/interaction-gate.js',
     // core/scroll
-    'core/scroll/scroll-index.js',
     'core/scroll/scroll-follow.js',
     'core/scroll/scrollbar-auto-hide.js',
     // core/shell — 课容器（figure-host / problem-brief / calc 为 AIClass_figure 附加层）
@@ -40,8 +39,6 @@
     'components/mathlive.js',
     'components/latex.js',
     'components/recognition-result.js',
-    'components/hand-hint.js',
-    'components/oral-input.js',
     'components/oral-card.js',
     'components/choice-card.js',
     'components/quick-qa.js',

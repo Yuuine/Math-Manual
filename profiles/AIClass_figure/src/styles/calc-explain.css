@@ -296,67 +296,13 @@
   color: var(--calc-ans-ink);
 }
 
-/* 左栏也要可滚：默认 top-split 左栏 overflow:hidden，本课改为累加计算 */
-.course-container[data-layout="top-split"] .course-scroll-left {
-  --cc-scroll-bottom-inset: 3rem;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  scroll-padding-bottom: var(--cc-scroll-bottom-inset, 3rem);
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  box-sizing: border-box;
-  padding-bottom: 0.5rem;
-}
-
-.course-container[data-layout="top-split"] .course-scroll-left::after {
-  content: '';
-  display: block;
-  flex: 1 0 auto;
-  min-height: var(--cc-scroll-bottom-inset, 3rem);
-  pointer-events: none;
-}
-
-/* 右栏半透明背板：无内容时不显示，有 .lf-block 时平滑显现 */
-.course-container[data-layout="top-split"] .course-scroll-right {
-  border-radius: 0.75rem;
-  background: rgba(255, 255, 255, 0);
-  border: 1px solid transparent;
-  box-shadow: none;
-  backdrop-filter: blur(0);
-  -webkit-backdrop-filter: blur(0);
-  padding: 0.5rem 0.75rem 0.75rem;
-  box-sizing: border-box;
-  transition:
-    background-color 0.4s ease,
-    border-color 0.4s ease,
-    box-shadow 0.4s ease,
-    backdrop-filter 0.4s ease;
-}
-
-.course-container[data-layout="top-split"] .course-scroll-right.has-lf-block {
-  background: rgba(255, 255, 255, 0.42);
-  border-color: rgba(148, 163, 184, 0.28);
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-/* Chrome 51 / iOS 13 无 backdrop-filter：兜底近不透明背景保证文字可读 */
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .course-container[data-layout="top-split"] .course-scroll-right.has-lf-block {
-    background: rgba(255, 255, 255, 0.92);
-  }
-}
-
 /* left-right / text-only 题头已在 scroll-top 文档流内，去掉引擎为绝对定位预留的 36px 顶空 */
 .course-container[data-layout="left-right"] .course-body,
 .course-container[data-layout="text-only"] .course-body {
   padding-top: 0.5rem;
 }
 
-/* 多题纵向叠放：每题至少一屏（top-split 例题 + left-right / text-only 练习） */
+/* 多题纵向叠放：每题至少一屏 */
 .course-flow.course-flow--stack.has-container {
   height: auto;
   min-height: 100%;
@@ -365,7 +311,6 @@
   padding-bottom: 10rem;
 }
 
-.course-flow.course-flow--stack .course-container[data-layout="top-split"],
 .course-flow.course-flow--stack .course-container[data-layout="left-right"],
 .course-flow.course-flow--stack .course-container[data-layout="text-only"] {
   flex: none;
@@ -374,7 +319,6 @@
   margin-bottom: var(--lf-block-gap, 1rem);
 }
 
-.course-flow.course-flow--stack .course-container[data-layout="top-split"]:last-child,
 .course-flow.course-flow--stack .course-container[data-layout="left-right"]:last-child,
 .course-flow.course-flow--stack .course-container[data-layout="text-only"]:last-child {
   margin-bottom: 0;

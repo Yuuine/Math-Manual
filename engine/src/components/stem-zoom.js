@@ -1,9 +1,9 @@
 // 题干展开（StemExpand）— 通用组件：顶栏题干限高，点「展开」仅向下拉高，宽度与收起态一致
-// 挂载：AIClassStemExpand.mount(container) — text-only / top-split / left-right
+// 挂载：AIClassStemExpand.mount(container) — text-only / left-right
 ;(function () {
   var EXPAND_LABEL = '展开'
   var COLLAPSE_LABEL = '收起'
-  var EXPAND_LAYOUTS = { 'text-only': true, 'top-split': true, 'left-right': true }
+  var EXPAND_LAYOUTS = { 'text-only': true, 'left-right': true }
   var CHEVRON_SVG =
     '<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
     '<path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>' +

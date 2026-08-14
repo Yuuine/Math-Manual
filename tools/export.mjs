@@ -164,15 +164,15 @@ function copyFileInto(src, dest) {
   fs.copyFileSync(src, dest)
 }
 
-// ---- 原题留档：courseware/problems/ 只放 markdown + 用到的图片（不写 problems.json）----
+// ---- 原题留档：{course}/problem/ 只放 markdown + 用到的图片（不写 problems.json）----
 // 输入 plan.problem_source（images 可为 [{url,description}] 或纯字符串；url 相对 courseDir）
 // 产出：
-//  - courseware/problems/*.md —— 原题 markdown
-//  - courseware/problems/ 下题干图片（url 与 md 占位符一致，按文件名）
+//  - {course}/problem/*.md —— 原题 markdown
+//  - {course}/problem/ 下题干图片（url 与 md 占位符一致，按文件名）
 // 返回 courseware.problem_source.images → [{url, description}]（url 为文件名）
-function archiveProblems(cwDir, courseDir, plan, parts) {
-  const problemsDir = path.join(cwDir, 'problems')
-  fs.mkdirSync(problemsDir, { recursive: true })
+function archiveProblems(outDir, courseDir, plan, parts) {
+  const problemDir = path.join(outDir, 'problem')
+  fs.mkdirSync(problemDir, { recursive: true })
   const missing = []
 
   const mdDir = findProblemMarkdownDir(courseDir, parts)
@@ -180,14 +180,14 @@ function archiveProblems(cwDir, courseDir, plan, parts) {
     for (const name of fs.readdirSync(mdDir)) {
       if (!name.toLowerCase().endsWith('.md')) continue
       const srcMd = path.join(mdDir, name)
-      copyFileInto(srcMd, path.join(problemsDir, name))
+      copyFileInto(srcMd, path.join(problemDir, name))
       const mdText = fs.readFileSync(srcMd, 'utf8')
       for (const ref of extractMarkdownImageRefs(mdText)) {
         if (/^(https?:|data:)/i.test(ref)) continue
         const rel = ref.replace(/\\/g, '/')
         const srcImg = path.join(mdDir, rel)
         if (fs.existsSync(srcImg) && fs.statSync(srcImg).isFile()) {
-          copyFileInto(srcImg, path.join(problemsDir, rel))
+          copyFileInto(srcImg, path.join(problemDir, rel))
         } else {
           missing.push(rel)
         }
@@ -208,8 +208,8 @@ function archiveProblems(cwDir, courseDir, plan, parts) {
       const base = path.basename(url)
       const src = path.join(courseDir, url)
       if (fs.existsSync(src)) {
-        copyFileInto(src, path.join(problemsDir, base))
-      } else if (!fs.existsSync(path.join(problemsDir, base))) {
+        copyFileInto(src, path.join(problemDir, base))
+      } else if (!fs.existsSync(path.join(problemDir, base))) {
         missing.push(url)
       }
       if (seen[base]) return
@@ -245,7 +245,11 @@ function writeLessonFiles(lessonDir, plan, courseware, figureSpec) {
   const scripts = ['lesson/plan.js']
   if (figureSpec) {
     // figure-spec → JS 包裹（file:// 可读），spec-loader 随后 loadAll 注册
-    const figureJs = 'window.FIGURE_SPECS = [' + JSON.stringify(figureSpec) + '];\n' +
+    // 单对象或 specs[] / 顶层数组（例+练两套图）都摊平成 FIGURE_SPECS
+    const list = Array.isArray(figureSpec)
+      ? figureSpec
+      : (Array.isArray(figureSpec.specs) ? figureSpec.specs : [figureSpec])
+    const figureJs = 'window.FIGURE_SPECS = ' + JSON.stringify(list) + ';\n' +
       'if (window.AIClassFigureSpecLoader) window.AIClassFigureSpecLoader.loadAll();\n'
     fs.writeFileSync(path.join(lessonDir, 'modules', 'figure.js'), figureJs)
     scripts.push('lesson/modules/figure.js')
@@ -384,13 +388,14 @@ function exportCourse(courseDir) {
     fs.rmSync(legacy, { recursive: true, force: true })
   }
 
-  // courseware/ 运行时包：course.json + plan.json（整体保留）+ problems 原题留档 + assets + runtime + scripts + debug + courseware.js（调试兜底）
+  // courseware/ 运行时包：course.json + plan.json（整体保留）+ assets + runtime + scripts + debug + courseware.js（调试兜底）
+  // 原题留档独立于运行时包，落在 {course}/problem/
   const cwDir = path.join(out, 'courseware')
   fs.mkdirSync(cwDir, { recursive: true })
 
-  // 顶层（严格 3 项）：index.html + courseware.json（problem_source.images → {url, description}）
+  // 顶层（4 项）：index.html + courseware.json（problem_source.images → {url, description}）+ problem/ 原题留档
   fs.writeFileSync(path.join(out, 'index.html'), generateIndexHtml(plan, courseId))
-  courseware.problem_source = archiveProblems(cwDir, courseDir, plan, parts)
+  courseware.problem_source = archiveProblems(out, courseDir, plan, parts)
   fs.writeFileSync(path.join(out, 'courseware.json'), JSON.stringify(courseware, null, 2) + '\n')
 
   fs.writeFileSync(path.join(cwDir, 'course.json'), JSON.stringify({

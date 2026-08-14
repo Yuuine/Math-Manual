@@ -1,8 +1,6 @@
-// 统一容器：四种 layout + A/B 排版 + appendBlocks
+// 统一容器：两种 layout + A/B 排版 + appendBlocks
 ;(function () {
   var LAYOUTS = ['text-only', 'left-right']
-  var SPLIT_LAYOUTS = { 'top-split': true, 'left-right': true }
-  var TOP_SPLIT_REGIONS = { top: true, left: true, right: true }
 
   // 设计尺寸（布局参数/样式配置里的数字按 16px 基准 px）统一转 rem，hosted 模式随根字号缩放；
   // 字符串（如 "48%"、"none"）原样透传；运行时测量的 px 不走本函数。
@@ -45,7 +43,6 @@
       if (tr === 'top') return 'top'
       return 'main'
     }
-    if (!SPLIT_LAYOUTS[layout]) return 'main'
     if (layout === 'left-right') {
       var lr = block.region || block.zone || 'right'
       if (lr === 'top') return 'top'
@@ -53,10 +50,7 @@
       if (lr === 'bottom-right' || lr === 'right') return 'right'
       return 'right'
     }
-    var raw = block.region || block.zone || 'top'
-    if (raw === 'bottom-left' || raw === 'left') return 'left'
-    if (raw === 'bottom-right' || raw === 'right') return 'right'
-    return TOP_SPLIT_REGIONS[raw] ? raw : 'top'
+    return 'main'
   }
 
   function scrollTargetFor(container, region) {
@@ -64,13 +58,10 @@
       if (region === 'top') return container.scrollEl
       return container.scrollStackEl || container.scrollRightEl || container.scrollEl
     }
-    if (!SPLIT_LAYOUTS[container.layout]) return container.scrollEl
     if (container.layout === 'left-right') {
       if (region === 'top') return container.scrollEl
       return container.scrollStackEl || container.scrollRightEl
     }
-    if (region === 'left') return container.scrollLeftEl || container.scrollRightEl
-    if (region === 'right') return container.scrollRightEl
     return container.scrollEl
   }
 
@@ -78,13 +69,10 @@
     if (container.layout === 'text-only') {
       return [container.scrollEl, container.scrollRightEl, container.scrollStackEl].filter(Boolean)
     }
-    if (!SPLIT_LAYOUTS[container.layout]) {
-      return container.scrollEl ? [container.scrollEl] : []
-    }
     if (container.layout === 'left-right') {
       return [container.scrollEl, container.scrollRightEl, container.scrollStackEl].filter(Boolean)
     }
-    return [container.scrollEl, container.scrollLeftEl, container.scrollRightEl].filter(Boolean)
+    return container.scrollEl ? [container.scrollEl] : []
   }
 
   function forEachBlockInContainer(container, fn) {
@@ -215,7 +203,7 @@
   CourseContainer.prototype.getInstanceId = function () { return this.instanceId }
   CourseContainer.prototype.getScrollEl = function () { return this.scrollEl }
   CourseContainer.prototype.getFollowScrollEl = function () {
-    if (this.layout === 'left-right' || this.layout === 'top-split' || this.layout === 'text-only') {
+    if (this.layout === 'left-right' || this.layout === 'text-only') {
       return this.scrollRightEl || null
     }
     return null
@@ -375,11 +363,7 @@
 
   CourseContainer.prototype._photoAnswerTarget = function () {
     // left-right / text-only：右边正文栈（题干下方、讲解 guide 上方）
-    if (this.layout === 'left-right' || this.layout === 'text-only') {
-      return this.scrollStackEl || this.scrollRightEl
-    }
-    if (this.layout === 'top-split') return this.scrollRightEl || this.scrollEl
-    return this.scrollEl
+    return this.scrollStackEl || this.scrollRightEl || this.scrollEl
   }
 
   CourseContainer.prototype._insertPhotoAnswerCard = function (target, card) {

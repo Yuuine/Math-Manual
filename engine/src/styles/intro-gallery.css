@@ -24,7 +24,7 @@
   width: fit-content;
   padding: 0 0.125rem; /* 0 2px */
   color: var(--cc-ink, var(--lf-ink, #0f172a));
-  font-size: calc(var(--cc-body-size, 1.5rem) * 1.06); /* 24px 回退 */
+  font-size: 1.06em;
   font-weight: 800;
   line-height: 1.18;
   background: var(--marker-pink-bg, rgba(255, 142, 178, 0.28));
@@ -35,7 +35,7 @@
 .course-container .lf-intro-gallery-line {
   max-width: 51.25rem; /* 820px */
   color: var(--cc-ink, var(--lf-ink, #0f172a));
-  font-size: var(--cc-body-size, var(--lf-body-size, 1.5rem)); /* 24px 回退 */
+  font-size: var(--cc-body-size, var(--lf-body-size));
   line-height: var(--cc-line-height, var(--lf-line-height, 1.58));
 }
 

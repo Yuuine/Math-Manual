@@ -1,20 +1,17 @@
 /* 题干展开（StemExpand）— 组件唯一入口：stem-zoom.js + 本文件 */
 
 .course-container[data-layout="text-only"] .course-body,
-.course-container[data-layout="top-split"] .course-body,
 .course-container[data-layout="left-right"] .course-body {
   position: relative;
 }
 
 .course-container[data-layout="text-only"] .course-scroll-top,
-.course-container[data-layout="top-split"] .course-scroll-top,
 .course-container[data-layout="left-right"] .course-scroll-top {
   position: relative;
 }
 
 /* 带题号行：限高 token + 行高 */
 .course-container[data-layout="text-only"] .course-scroll-top--labeled,
-.course-container[data-layout="top-split"] .course-scroll-top--labeled,
 .course-container[data-layout="left-right"] .course-scroll-top--labeled {
   --cc-stem-head-h: 1.84em;
   line-height: var(--cc-line-height, var(--lf-line-height, 1.58));
@@ -31,10 +28,8 @@
 
 /* ── 外壳（挂载 data-stem-expand 后生效）── */
 .course-container[data-layout="text-only"] .course-scroll-top[data-stem-expand="1"],
-.course-container[data-layout="top-split"] .course-scroll-top[data-stem-expand="1"],
 .course-container[data-layout="left-right"] .course-scroll-top[data-stem-expand="1"],
 .course-container[data-layout="text-only"] .course-scroll-top.stem-expand-open,
-.course-container[data-layout="top-split"] .course-scroll-top.stem-expand-open,
 .course-container[data-layout="left-right"] .course-scroll-top.stem-expand-open {
   --stem-glass-bg: linear-gradient(
     180deg,
@@ -47,7 +42,6 @@
 }
 
 .course-container[data-layout="text-only"] .course-scroll-top[data-stem-expand="1"],
-.course-container[data-layout="top-split"] .course-scroll-top[data-stem-expand="1"],
 .course-container[data-layout="left-right"] .course-scroll-top[data-stem-expand="1"] {
   /* 折叠态也建层叠上下文：backdrop-filter 已建，但自身需高于主体区，按钮热区下半段才可点 */
   z-index: 10;
@@ -65,14 +59,12 @@
 }
 
 .course-container[data-layout="text-only"] .course-scroll-top[data-stem-expand="1"].stem-expand-animating,
-.course-container[data-layout="top-split"] .course-scroll-top[data-stem-expand="1"].stem-expand-animating,
 .course-container[data-layout="left-right"] .course-scroll-top[data-stem-expand="1"].stem-expand-animating {
   overflow: hidden;
 }
 
 /* 题号行随 inner 整体滚动，不 sticky */
 .course-container[data-layout="text-only"] .course-scroll-top[data-stem-expand="1"] .course-stem-head,
-.course-container[data-layout="top-split"] .course-scroll-top[data-stem-expand="1"] .course-stem-head,
 .course-container[data-layout="left-right"] .course-scroll-top[data-stem-expand="1"] .course-stem-head {
   position: static;
   z-index: auto;
@@ -106,7 +98,6 @@
 }
 
 .course-container[data-layout="text-only"] .course-scroll-top.stem-expand-open .stem-expand-scroll,
-.course-container[data-layout="top-split"] .course-scroll-top.stem-expand-open .stem-expand-scroll,
 .course-container[data-layout="left-right"] .course-scroll-top.stem-expand-open .stem-expand-scroll {
   max-height: none;
   padding-bottom: 0;
@@ -287,7 +278,6 @@
 
 /* 展开态：同毛玻璃底，仅增高 max-height + 略加深阴影 */
 .course-container[data-layout="text-only"] .course-scroll-top.stem-expand-open,
-.course-container[data-layout="top-split"] .course-scroll-top.stem-expand-open,
 .course-container[data-layout="left-right"] .course-scroll-top.stem-expand-open {
   position: absolute;
   z-index: 15;
@@ -318,10 +308,8 @@
   }
 
   .course-container[data-layout="text-only"] .course-scroll-top[data-stem-expand="1"],
-  .course-container[data-layout="top-split"] .course-scroll-top[data-stem-expand="1"],
   .course-container[data-layout="left-right"] .course-scroll-top[data-stem-expand="1"],
   .course-container[data-layout="text-only"] .course-scroll-top.stem-expand-open,
-  .course-container[data-layout="top-split"] .course-scroll-top.stem-expand-open,
   .course-container[data-layout="left-right"] .course-scroll-top.stem-expand-open {
     --stem-glass-bg: linear-gradient(
       180deg,
@@ -332,7 +320,6 @@
 }
 
 .course-container[data-layout="text-only"] .stem-expand-spacer,
-.course-container[data-layout="top-split"] .stem-expand-spacer,
 .course-container[data-layout="left-right"] .stem-expand-spacer {
   flex: 0 0 auto;
   visibility: hidden;

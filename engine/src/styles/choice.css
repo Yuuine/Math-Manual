@@ -46,14 +46,14 @@
   align-items: center;
   width: 100%;
   min-width: 0;
-  min-height: calc(2.125rem * var(--lf-type-scale, 1));
-  padding: calc(0.25rem * var(--lf-type-scale, 1)) calc(var(--lf-grid-unit, 1.25rem) * 0.45);
+  min-height: 2.125rem;
+  padding: 0.25rem calc(var(--lf-grid-unit, 1.25rem) * 0.45);
   border: none;
   border-bottom: 1.5px solid rgba(178, 186, 200, 0.55);
   border-radius: 0;
   background: transparent;
   font: inherit;
-  font-size: calc(var(--lf-body-size, 1.75rem) * 0.88);
+  font-size: 0.88em;
   line-height: 1.32;
   transition:
     background 0.32s cubic-bezier(0.22, 1, 0.36, 1),
@@ -110,13 +110,13 @@
 
 .aic-choice-option--plain {
   width: 100%;
-  padding: calc(0.5rem * var(--lf-type-scale, 1)) calc(0.625rem * var(--lf-type-scale, 1));
+  padding: 0.5rem 0.625rem;
   border: none;
   border-bottom: 1px solid rgba(178, 186, 200, 0.55);
   border-radius: 0;
   background: transparent;
   font: inherit;
-  font-size: calc(var(--lf-body-size, 1.75rem) * 0.88);
+  font-size: 0.88em;
   line-height: var(--lf-line-height, 1.58);
   transition: background 0.2s ease;
 }
@@ -145,8 +145,8 @@
 .aic-choice-radio {
   position: relative;
   flex-shrink: 0;
-  width: calc(1rem * var(--lf-type-scale, 1));
-  height: calc(1rem * var(--lf-type-scale, 1));
+  width: 1rem;
+  height: 1rem;
   border: 1.5px solid rgba(44, 116, 243, 0.45);
   border-radius: 50%;
   background: #fff;
@@ -158,9 +158,9 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: calc(0.5rem * var(--lf-type-scale, 1));
-  height: calc(0.5rem * var(--lf-type-scale, 1));
-  margin: calc(-0.25rem * var(--lf-type-scale, 1)) 0 0 calc(-0.25rem * var(--lf-type-scale, 1));
+  width: 0.5rem;
+  height: 0.5rem;
+  margin: -0.25rem 0 0 -0.25rem;
   border-radius: 50%;
   background: rgba(44, 116, 243, 0.85);
   opacity: 0;

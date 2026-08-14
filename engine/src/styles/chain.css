@@ -21,7 +21,7 @@
   border-radius: 62.4375rem; /* 999px */
   background: rgba(255, 255, 255, 0.72);
   line-height: 1.36;
-  font-size: var(--cc-body-size, var(--lf-body-size, 1.75rem)); /* 28px 回退 */
+  font-size: var(--cc-body-size, var(--lf-body-size));
 }
 
 .course-container .lf-chain-node.is-highlight {
@@ -32,5 +32,5 @@
 
 .course-container .lf-chain-arrow {
   color: var(--lf-muted, #64748b);
-  font-size: calc(var(--cc-body-size, 1.75rem) * 0.92); /* 28px 回退 */
+  font-size: 0.92em;
 }
