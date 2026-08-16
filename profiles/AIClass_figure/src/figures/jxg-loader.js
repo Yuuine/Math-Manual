@@ -19,7 +19,8 @@
   var loading = false
   var queue = []
 
-  /** 全局默认关 KaTeX，避免明文点名/△∠ 被误渲染；kit 按需对单个 text 开启 */
+  /** 全局默认关 KaTeX，避免明文点名/△∠ 被误渲染；kit 按需对单个 text 开启。
+   * 字号/线宽由 JXGKit2D.createScaled 按根 rem 换算，不在此写死 px。 */
   function configureDefaults() {
     if (!window.JXG || !window.JXG.Options) return
     if (!window.JXG.Options.text) window.JXG.Options.text = {}

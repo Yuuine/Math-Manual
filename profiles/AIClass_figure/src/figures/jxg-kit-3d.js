@@ -67,6 +67,9 @@
     highlight: false
   };
 
+  var DESIGN_ROOT_FS = 16;
+  var REM_PX_KEYS = ['fontSize', 'strokeWidth', 'size'];
+
   function assign() {
     var out = {};
     for (var i = 0; i < arguments.length; i++) {
@@ -77,6 +80,64 @@
       }
     }
     return out;
+  }
+
+  function remScale() {
+    if (typeof document === 'undefined' || !document.documentElement || !window.getComputedStyle) {
+      return 1;
+    }
+    var fs = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    return (fs > 0 ? fs : DESIGN_ROOT_FS) / DESIGN_ROOT_FS;
+  }
+
+  function remPx(designPx) {
+    if (typeof designPx !== 'number' || isNaN(designPx)) return designPx;
+    return designPx * remScale();
+  }
+
+  function tagDesign(el, design) {
+    if (!el || !design) return el;
+    var keys = Object.keys(design);
+    if (!keys.length) return el;
+    el.__lfDesign = assign({}, el.__lfDesign || {}, design);
+    return el;
+  }
+
+  function scalePixelAttrs(attrs) {
+    var out = assign({}, attrs || {});
+    var design = {};
+    var i;
+    for (i = 0; i < REM_PX_KEYS.length; i++) {
+      var key = REM_PX_KEYS[i];
+      if (typeof out[key] === 'number') {
+        design[key] = out[key];
+        out[key] = remPx(out[key]);
+      }
+    }
+    if (out.borders && typeof out.borders === 'object' && !Array.isArray(out.borders)) {
+      var borderScaled = scalePixelAttrs(out.borders);
+      out.borders = borderScaled.attrs;
+      if (Object.keys(borderScaled.design).length) design.borders = borderScaled.design;
+    }
+    if (out.label && typeof out.label === 'object') {
+      var labelScaled = scalePixelAttrs(out.label);
+      out.label = labelScaled.attrs;
+      if (Object.keys(labelScaled.design).length) design.label = labelScaled.design;
+    }
+    return { attrs: out, design: design };
+  }
+
+  function createScaled(viewOrBoard, type, parents, attrs) {
+    var scaled = scalePixelAttrs(attrs || {});
+    var el = viewOrBoard.create(type, parents, scaled.attrs);
+    tagDesign(el, scaled.design);
+    if (scaled.design.label && el.label) tagDesign(el.label, scaled.design.label);
+    if (scaled.design.borders && el.borders && el.borders.length) {
+      for (var i = 0; i < el.borders.length; i++) {
+        tagDesign(el.borders[i], scaled.design.borders);
+      }
+    }
+    return el;
   }
 
   function applyHome(view, board, home) {
@@ -169,7 +230,8 @@
         delete attrs.xyz;
       }
       var withLabel = attrs.withLabel != null ? attrs.withLabel : false;
-      points[name] = view.create(
+      points[name] = createScaled(
+        view,
         'point3d',
         coords,
         assign({}, DEFAULT_POINT, { name: name, withLabel: withLabel }, attrs)
@@ -192,7 +254,8 @@
         delete attrs.to;
       }
       edges.push(
-        view.create(
+        createScaled(
+          view,
           'line3d',
           [resolvePoint(points, from), resolvePoint(points, to)],
           assign({}, DEFAULT_EDGE, attrs)
@@ -210,7 +273,7 @@
       delete attrs.points;
       attrs.borders = face.borders || { visible: false };
       attrs.vertices = face.vertexStyle || { visible: false, fixed: true };
-      faces.push(view.create('polygon3d', verts, attrs));
+      faces.push(createScaled(view, 'polygon3d', verts, attrs));
     });
 
     return { points: points, edges: edges, faces: faces };
@@ -276,6 +339,9 @@
     mount: mount,
     draw: draw,
     drawBox: drawBox,
+    remScale: remScale,
+    remPx: remPx,
+    createScaled: createScaled,
     defaults: {
       board: DEFAULT_BOARD,
       view: DEFAULT_VIEW,

@@ -44,6 +44,13 @@
     highlight: false
   };
 
+  /** 设计稿根字号；与 layout-stage / course-container.toCssSize 一致 */
+  var DESIGN_ROOT_FS = 16;
+  var DEFAULT_FONT_SIZE = 14;
+  var HIGHLIGHT_STROKE_DELTA = 1.5;
+  var HIGHLIGHT_STROKE_FALLBACK = 4;
+  var REM_PX_KEYS = ['fontSize', 'strokeWidth', 'size'];
+
   function assign() {
     var out = {};
     for (var i = 0; i < arguments.length; i++) {
@@ -54,6 +61,89 @@
       }
     }
     return out;
+  }
+
+  /** 当前根字号相对设计基准的倍率（1rem = 根字号） */
+  function remScale() {
+    if (typeof document === 'undefined' || !document.documentElement || !window.getComputedStyle) {
+      return 1;
+    }
+    var fs = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    return (fs > 0 ? fs : DESIGN_ROOT_FS) / DESIGN_ROOT_FS;
+  }
+
+  /** 设计 px（@16 根字号）→ 当前屏幕 px */
+  function remPx(designPx) {
+    if (typeof designPx !== 'number' || isNaN(designPx)) return designPx;
+    return designPx * remScale();
+  }
+
+  function tagDesign(el, design) {
+    if (!el || !design) return el;
+    var keys = Object.keys(design);
+    if (!keys.length) return el;
+    el.__lfDesign = assign({}, el.__lfDesign || {}, design);
+    return el;
+  }
+
+  /**
+   * 把 attrs 里的 fontSize/strokeWidth/size（及嵌套 borders/label）按 rem 换算。
+   * 作者仍写设计 px；返回 { attrs, design }，design 供 resize 时重算。
+   */
+  function scalePixelAttrs(attrs) {
+    var out = assign({}, attrs || {});
+    var design = {};
+    var i;
+    for (i = 0; i < REM_PX_KEYS.length; i++) {
+      var key = REM_PX_KEYS[i];
+      if (typeof out[key] === 'number') {
+        design[key] = out[key];
+        out[key] = remPx(out[key]);
+      }
+    }
+    if (out.borders && typeof out.borders === 'object' && !Array.isArray(out.borders)) {
+      var borderScaled = scalePixelAttrs(out.borders);
+      out.borders = borderScaled.attrs;
+      if (Object.keys(borderScaled.design).length) design.borders = borderScaled.design;
+    }
+    if (out.label && typeof out.label === 'object') {
+      var labelScaled = scalePixelAttrs(out.label);
+      out.label = labelScaled.attrs;
+      if (Object.keys(labelScaled.design).length) design.label = labelScaled.design;
+    }
+    return { attrs: out, design: design };
+  }
+
+  function applyDesignScale(el, design) {
+    if (!el || !design) return;
+    var patch = {};
+    var i;
+    for (i = 0; i < REM_PX_KEYS.length; i++) {
+      var key = REM_PX_KEYS[i];
+      if (typeof design[key] === 'number') patch[key] = remPx(design[key]);
+    }
+    if (Object.keys(patch).length && typeof el.setAttribute === 'function') {
+      el.setAttribute(patch);
+    }
+    if (design.label && el.label) applyDesignScale(el.label, design.label);
+    if (design.borders && el.borders && el.borders.length) {
+      for (i = 0; i < el.borders.length; i++) {
+        applyDesignScale(el.borders[i], design.borders);
+      }
+    }
+  }
+
+  function createScaled(board, type, parents, attrs) {
+    var scaled = scalePixelAttrs(attrs || {});
+    var el = board.create(type, parents, scaled.attrs);
+    tagDesign(el, scaled.design);
+    if (scaled.design.label && el.label) tagDesign(el.label, scaled.design.label);
+    if (scaled.design.borders && el.borders && el.borders.length) {
+      for (var i = 0; i < el.borders.length; i++) {
+        tagDesign(el.borders[i], scaled.design.borders);
+      }
+    }
+    return el;
   }
 
   /**
@@ -97,10 +187,10 @@
       text = texFractionToPlain(text);
       useKatex = false;
     }
-    return board.create('text', [x, y, text], assign({
+    return createScaled(board, 'text', [x, y, text], assign({
       fixed: true,
       highlight: false,
-      fontSize: 14,
+      fontSize: DEFAULT_FONT_SIZE,
       useKatex: useKatex,
       anchorX: 'middle'
     }, attrs || {}));
@@ -122,6 +212,27 @@
         Object.keys(collection).forEach(function (id) { fn(collection[id], id); });
       }
     });
+  }
+
+  /**
+   * 视口/根字号变化后，按设计值重算 board 内文字/线宽/点大小，并同步 captureBase。
+   */
+  function syncRemScale(board, els, base) {
+    if (!els) return;
+    forEachElement(els, function (el, id) {
+      if (!el) return;
+      applyDesignScale(el, el.__lfDesign);
+      if (base && base[id] && el.__lfDesign && typeof el.__lfDesign.strokeWidth === 'number') {
+        base[id].strokeWidth = remPx(el.__lfDesign.strokeWidth);
+      }
+      if (base && base[id] && el.__lfDesign && typeof el.__lfDesign.size === 'number') {
+        base[id].size = remPx(el.__lfDesign.size);
+      }
+    });
+    (els._dynamic || []).forEach(function (el) {
+      applyDesignScale(el, el && el.__lfDesign);
+    });
+    if (board && typeof board.update === 'function') board.update();
   }
 
   function resolveTarget(els, id) {
@@ -168,7 +279,9 @@
   }
 
   function highlightAttrs(el, baseAttrs) {
-    var width = baseAttrs && typeof baseAttrs.strokeWidth === 'number' ? baseAttrs.strokeWidth + 1.5 : 4;
+    var width = baseAttrs && typeof baseAttrs.strokeWidth === 'number'
+      ? baseAttrs.strokeWidth + remPx(HIGHLIGHT_STROKE_DELTA)
+      : remPx(HIGHLIGHT_STROKE_FALLBACK);
     var attrs = { strokeColor: HIGHLIGHT_COLOR, strokeWidth: width, strokeOpacity: 1 };
     // 点/线没有填充概念，多设 fillColor 无害；多边形依赖它显色
     attrs.fillColor = HIGHLIGHT_COLOR;
@@ -464,7 +577,10 @@
       if (labelNorm.useKatex || attrs.useKatex) {
         pointAttrs.label = assign({}, pointAttrs.label, { useKatex: true });
       }
-      points[name] = board.create('point', coords, pointAttrs);
+      if (pointAttrs.withLabel) {
+        pointAttrs.label = assign({ fontSize: DEFAULT_FONT_SIZE }, pointAttrs.label || {});
+      }
+      points[name] = createScaled(board, 'point', coords, pointAttrs);
     });
 
     function elementId(attrs, fallback) {
@@ -491,7 +607,8 @@
       var id = elementId(attrs, type + '-' + index);
       // JSXGraph 用 name 做稳定标识；spec 的 id 必须落到 name，否则 state.show 找不到
       if (attrs.name == null) attrs.name = id;
-      var el = board.create(
+      var el = createScaled(
+        board,
         type,
         [resolvePoint(points, from), resolvePoint(points, to)],
         assign({}, DEFAULT_SEGMENT, attrs)
@@ -527,7 +644,7 @@
       attrs.vertices = poly.vertexStyle || { visible: false, fixed: true };
       var id = elementId(attrs, 'poly-' + index);
       if (attrs.name == null) attrs.name = id;
-      polygons[id] = board.create('polygon', verts, attrs);
+      polygons[id] = createScaled(board, 'polygon', verts, attrs);
     });
 
     (figure.circles || []).forEach(function (cir, index) {
@@ -546,7 +663,7 @@
       delete attrs.radius;
       var id = elementId(attrs, 'cir-' + index);
       if (attrs.name == null) attrs.name = id;
-      circles[id] = board.create('circle', parents, attrs);
+      circles[id] = createScaled(board, 'circle', parents, attrs);
     });
 
     (figure.arcs || []).forEach(function (arc, index) {
@@ -564,7 +681,7 @@
       delete attrs.end;
       var id = elementId(attrs, 'arc-' + index);
       if (attrs.name == null) attrs.name = id;
-      arcs[id] = board.create('arc', [center, from, to], attrs);
+      arcs[id] = createScaled(board, 'arc', [center, from, to], attrs);
     });
 
     (figure.texts || []).forEach(function (t, index) {
@@ -579,7 +696,7 @@
         parents = [at[0], at[1], content];
       }
       var attrs = assign(
-        { fixed: true, highlight: false, fontSize: 14, useKatex: norm.useKatex },
+        { fixed: true, highlight: false, fontSize: DEFAULT_FONT_SIZE, useKatex: norm.useKatex },
         t,
         { useKatex: t.useKatex != null ? t.useKatex : norm.useKatex }
       );
@@ -587,7 +704,7 @@
       delete attrs.text;
       var id = elementId(attrs, 'text-' + index);
       if (attrs.name == null) attrs.name = id;
-      texts[id] = board.create('text', parents, attrs);
+      texts[id] = createScaled(board, 'text', parents, attrs);
     });
 
     return {
@@ -612,10 +729,16 @@
     applyStateDef: applyStateDef,
     runActions: runActions,
     resolveTarget: resolveTarget,
+    remScale: remScale,
+    remPx: remPx,
+    scalePixelAttrs: scalePixelAttrs,
+    createScaled: createScaled,
+    syncRemScale: syncRemScale,
     defaults: {
       board: DEFAULT_BOARD,
       point: DEFAULT_POINT,
-      segment: DEFAULT_SEGMENT
+      segment: DEFAULT_SEGMENT,
+      fontSize: DEFAULT_FONT_SIZE
     }
   };
 });

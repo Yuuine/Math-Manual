@@ -244,8 +244,11 @@
   margin: 0;
 }
 
-.course-container[data-layout="left-right"] .course-figure-content img,
-.course-container[data-layout="left-right"] .course-figure-content .tx-illus-vertical img {
+/* 直接铺满左栏的插图。不要套到 .lf-illus-upgrade 等包一层的 img：
+   父级若 height:auto 且子 img 又 absolute，父级会塌成 0 高，图就「没了」。 */
+.course-container[data-layout="left-right"] .course-figure-content > .lf-block > img,
+.course-container[data-layout="left-right"] .course-figure-content .lf-text-line > img,
+.course-container[data-layout="left-right"] .course-figure-content .tx-illus-horizontal img {
   display: block;
   position: absolute;
   left: 0;

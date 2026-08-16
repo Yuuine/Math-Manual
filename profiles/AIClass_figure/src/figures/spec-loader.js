@@ -169,7 +169,7 @@
         var ci
         for (ci = 0; ci < nCells; ci++) {
           var bx = xMin + ci
-          cellPolys.push(board.create('polygon', [
+          cellPolys.push(JXGKit2D.createScaled(board, 'polygon', [
             [bx, y - halfH], [bx + 1, y - halfH], [bx + 1, y + halfH], [bx, y + halfH]
           ], {
             fillColor: barFill,
@@ -212,18 +212,25 @@
       }
 
       if (texture) {
-        var texEl = board.create('image', [
-          resolveAssetUrl(texture),
-          [xMin, y - halfH],
-          [xMax - xMin, halfH * 2]
-        ], Object.assign({
+        var texAttrs = Object.assign({
           strokeColor: '#1e293b',
           strokeWidth: 2,
           visible: cellVisible,
           fixed: true,
           highlight: false,
           name: id
-        }, attrs))
+        }, attrs)
+        var texEl = JXGKit2D.createScaled
+          ? JXGKit2D.createScaled(board, 'image', [
+            resolveAssetUrl(texture),
+            [xMin, y - halfH],
+            [xMax - xMin, halfH * 2]
+          ], texAttrs)
+          : board.create('image', [
+            resolveAssetUrl(texture),
+            [xMin, y - halfH],
+            [xMax - xMin, halfH * 2]
+          ], texAttrs)
         els.segments[id] = texEl
       }
     })
@@ -407,6 +414,7 @@
         applyState(state)
         if (keepPlanIllust) addClass(figure, 'is-illust')
         resize()
+        window.addEventListener('resize', onWinResize)
       }).catch(function (err) {
         if (slot) slot.textContent = '图形加载失败: ' + err.message
       })
@@ -453,8 +461,20 @@
     function resize() {
       if (!board) return
       if (typeof board.resizeContainer === 'function') board.resizeContainer()
+      if (typeof JXGKit2D.syncRemScale === 'function') {
+        JXGKit2D.syncRemScale(board, els, base)
+      }
       if (typeof board.fullUpdate === 'function') board.fullUpdate()
       else if (typeof board.update === 'function') board.update()
+    }
+
+    function onWinResize() {
+      // 等 layout-stage 写完根字号后再 syncRemScale，避免同帧读到旧 rem
+      if (typeof window.requestAnimationFrame === 'function') {
+        window.requestAnimationFrame(function () { resize() })
+      } else {
+        resize()
+      }
     }
 
     function reset() {
@@ -463,6 +483,7 @@
     }
 
     function teardown() {
+      window.removeEventListener('resize', onWinResize)
       if (figure) {
         figure.removeAttribute('data-figure-state')
         figure.removeAttribute('data-figure-template')
