@@ -3,7 +3,16 @@
 ;(function () {
   function showSubmittingToast() {
     if (window.toast && typeof window.toast.show === 'function') {
-      window.toast.show('提交中…', { duration: 1200 })
+      window.toast.show('提交中…', { duration: 450 })
+    }
+  }
+
+  // 提交成功反馈：短暂转圈后切换为「提交成功」+ 打勾图标（toast 复用同一节点）
+  function showSubmitSuccessToast() {
+    if (window.toast && typeof window.toast.show === 'function') {
+      setTimeout(function () {
+        window.toast.show('提交成功', { icon: 'check', duration: 900 })
+      }, 400)
     }
   }
 
@@ -61,6 +70,7 @@
       if (typeof handlers[block.onSubmit] === 'function') {
         handlers[block.onSubmit](value, block, config)
         applyGuidanceReveal(block)
+        showSubmitSuccessToast()
         return
       }
       console.warn(
@@ -84,6 +94,7 @@
       }
       submit.submitInteraction(kind, envelope, value, block)
       applyGuidanceReveal(block)
+      showSubmitSuccessToast()
       return
     }
 
@@ -91,6 +102,7 @@
       AIClassSubmitText.report(kind, value, block)
     }
     applyGuidanceReveal(block)
+    showSubmitSuccessToast()
   }
 
   function isInteractive(block, runtime) {

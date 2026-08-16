@@ -882,15 +882,16 @@
     nameEl.className = 'name'
     nameEl.textContent = item.label || item.name
     body.appendChild(nameEl)
-    var descEl = document.createElement('div')
-    descEl.className = 'desc' + (item.description ? '' : ' is-empty')
-    var editable = !!(courseRootHandle && editByAction[item.name] && editByAction[item.name].editable)
-    if (editable) {
-      descEl.classList.add('is-editable')
-      descEl.title = '点击编辑口播稿'
-    }
-    descEl.textContent = item.description || '（无口播）'
-    if (editable) {
+    if (item.description || (courseRootHandle && editByAction[item.name] && editByAction[item.name].editable)) {
+      var descEl = document.createElement('div')
+      descEl.className = 'desc'
+      var editable = !!(courseRootHandle && editByAction[item.name] && editByAction[item.name].editable)
+      if (editable) {
+        descEl.classList.add('is-editable')
+        descEl.title = '点击编辑口播稿'
+      }
+      descEl.textContent = item.description || '（暂无口播稿，点击补充）'
+      if (editable) {
         descEl.addEventListener('click', function (event) {
           event.stopPropagation()
           if (descEl.classList.contains('is-editing')) return
@@ -929,7 +930,7 @@
           cancel.onclick = function (e) {
             e.stopPropagation()
             descEl.classList.remove('is-editing')
-            descEl.textContent = item.description || '（无口播）'
+            descEl.textContent = item.description || '（暂无口播稿，点击补充）'
           }
           save.onclick = function (e) {
             e.stopPropagation()
@@ -943,9 +944,10 @@
             if (e.key === 'Escape') cancel.click()
             if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) save.click()
           })
-      })
+        })
+      }
+      body.appendChild(descEl)
     }
-    body.appendChild(descEl)
 
     btn.appendChild(tag)
     btn.appendChild(body)
@@ -1189,21 +1191,8 @@
     })
   }
 
-  // 判题：当前 question 节点，对照 answer → test 分支 → 下发下一 action
-  function judgeAndAdvance(value) {
-    if (!currentKey || !cwNodes.length) return
-    var node = null
-    for (var i = 0; i < cwNodes.length; i++) if (cwNodes[i].id === currentKey) { node = cwNodes[i]; break }
-    if (!node || node.type !== 'question' || !node.answer) return
-    var correct = node.answer.indexOf(String(value == null ? '' : value)) >= 0
-    var branch = (node.test || []).filter(function (t) { return t.when === correct })
-    var nextId = (branch.length ? branch[0].next : null) || node.next
-    var next = null
-    for (var j = 0; j < cwNodes.length; j++) if (cwNodes[j].id === nextId) { next = cwNodes[j]; break }
-    if (!next || !next.action || !next.action.length) return
-    setTimeout(function () { send(actionEntryName(next.action[0]) || next.id) }, 250)
-  }
-
+  // 判题与自动推进已取消：提交后只上传 user_submitted 结果，不再自动下发下一 action（揭晓/分支）。
+  // 推进完全由教师手动驱动（侧栏点击 / 「下一步」）。
   function normalizeActionName(action) {
     if (action == null) return ''
     if (Object.prototype.toString.call(action) === '[object Array]') {
@@ -1285,7 +1274,7 @@
         setStat('已收到拍照请求 — 可点「拍照回显」', 'ok')
         return
       }
-      judgeAndAdvance(d.value)
+      // 只记录提交结果，不自动推进到揭晓/分支 action（由教师手动驱动）
       return
     }
 

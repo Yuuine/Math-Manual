@@ -4,7 +4,8 @@
     var boot = window.__COURSE_BOOT || {}
     var lesson = boot.lessonRoot || 'lesson'
     if (typeof lesson !== 'string' || lesson.indexOf('/') < 0) return ''
-    return lesson.replace(/\/lesson$/, '')
+    // 导出页 lessonRoot = courseware/runtime/lesson，图片在 courseware/assets/
+    return lesson.replace(/\/runtime\/lesson$/, '').replace(/\/lesson$/, '')
   }
 
   // html 行内 `src="assets/..."` → 拼资源基路径；其余（http/data/相对 lesson）原样

@@ -42,6 +42,9 @@
     <div id="log"></div>
   </div>
 
+  <!-- file:// 兜底：courseware.js 以 JS 包裹方式提供 MASTER_COURSEWARE，
+       供 debug.js 在 XHR 拉 courseware.json 被 CORS 拦截时直接使用 -->
+  <script src="courseware.js"></script>
   <script src="debug.js"></script>
 </body>
 </html>

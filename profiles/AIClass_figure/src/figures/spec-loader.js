@@ -494,6 +494,7 @@
     var list = window.FIGURE_SPECS || []
     if (Array.isArray(list)) list.forEach(function (spec) {
       if (!spec || !spec.figureTemplate) return
+      // 注册工厂而非单例：同页多个容器（例/练）共用同一模板时各自实例化画板
       var factory = function () {
         return spec.kind === 'image' ? makeImageFigure(spec) : makeFigure(spec)
       }
