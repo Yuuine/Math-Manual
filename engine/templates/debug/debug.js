@@ -1076,6 +1076,17 @@
     updateStepStat()
   }
 
+  function loadCoursewareFallback() {
+    // XHR 拉取失败（file:// 下 CORS 拦截）时兜底：
+    // 优先已预加载的 MASTER_COURSEWARE，否则动态注入 courseware.js
+    if (window.MASTER_COURSEWARE) { applyCourseware(window.MASTER_COURSEWARE); return }
+    var s = document.createElement('script')
+    s.src = '../courseware/courseware.js'
+    s.onload = function () { if (window.MASTER_COURSEWARE) applyCourseware(window.MASTER_COURSEWARE) }
+    s.onerror = function () { setStat('courseware.json 加载失败', 'err') }
+    document.head.appendChild(s)
+  }
+
   function loadCourseware() {
     var xhr = new XMLHttpRequest()
     xhr.open('GET', '../courseware.json', true)
@@ -1085,35 +1096,14 @@
         try { applyCourseware(JSON.parse(xhr.responseText)); return }
         catch (e) { /* fall through */ }
       }
-      if (window.MASTER_COURSEWARE) { applyCourseware(window.MASTER_COURSEWARE); return }
-      var s = document.createElement('script')
-      s.src = '../courseware/courseware.js'
-      s.onload = function () { if (window.MASTER_COURSEWARE) applyCourseware(window.MASTER_COURSEWARE) }
-      s.onerror = function () { setStat('courseware.json 加载失败', 'err') }
-      document.head.appendChild(s)
+      loadCoursewareFallback()
     }
-    xhr.onerror = function () {
-      if (window.MASTER_COURSEWARE) applyCourseware(window.MASTER_COURSEWARE)
-      else setStat('courseware.json 加载失败', 'err')
-    }
+    xhr.onerror = loadCoursewareFallback
     xhr.send()
   }
 
-  // 判题：当前 question 节点，对照 answer → test 分支 → 下发下一 action
-  function judgeAndAdvance(value) {
-    if (!currentKey || !cwNodes.length) return
-    var node = null
-    for (var i = 0; i < cwNodes.length; i++) if (cwNodes[i].id === currentKey) { node = cwNodes[i]; break }
-    if (!node || node.type !== 'question' || !node.answer) return
-    var correct = node.answer.indexOf(String(value == null ? '' : value)) >= 0
-    var branch = (node.test || []).filter(function (t) { return t.when === correct })
-    var nextId = (branch.length ? branch[0].next : null) || node.next
-    var next = null
-    for (var j = 0; j < cwNodes.length; j++) if (cwNodes[j].id === nextId) { next = cwNodes[j]; break }
-    if (!next || !next.action || !next.action.length) return
-    setTimeout(function () { send(next.action[0]) }, 250)
-  }
-
+  // 判题与自动推进已取消：提交后只上传 user_submitted 结果，不再自动下发下一 action（揭晓/分支）。
+  // 推进完全由教师手动驱动（侧栏点击 / 「下一步」）。
   function normalizeActionName(action) {
     if (action == null) return ''
     if (Object.prototype.toString.call(action) === '[object Array]') {
@@ -1195,7 +1185,7 @@
         setStat('已收到拍照请求 — 可点「拍照回显」', 'ok')
         return
       }
-      judgeAndAdvance(d.value)
+      // 只记录提交结果，不自动推进到揭晓/分支 action（由教师手动驱动）
       return
     }
 

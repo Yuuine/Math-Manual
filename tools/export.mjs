@@ -9,6 +9,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execSync } from 'node:child_process'
 import { distRoot, outputRoot, resolveDistParts } from './output-paths.mjs'
+import { checkCoursewareFile } from './courseware-check.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.resolve(__dirname, '..')
@@ -267,6 +268,11 @@ function writeLessonFiles(lessonDir, plan, courseware, figureSpec) {
       'window.LESSON_HANDLERS = window.LESSON_HANDLERS || {};\n')
   }
   fs.writeFileSync(path.join(lessonDir, 'bootstrap.js'), 'window.LESSON_BOOT = true;\n')
+  // loader.js 写死加载 config.local.js；无 profile 覆盖层时也要保证文件存在（file:// 下 404 会报错）
+  const configLocalPath = path.join(lessonDir, 'config.local.js')
+  if (!fs.existsSync(configLocalPath)) {
+    fs.writeFileSync(configLocalPath, '// 导出包默认不携带密钥。宿主可在本文件中注入 provider 与本地覆盖配置。\nwindow.AIClassProviders = window.AIClassProviders || {}\n')
+  }
   fs.writeFileSync(path.join(lessonDir, 'styles', 'lesson.css'), '')
 }
 
@@ -398,6 +404,14 @@ function exportCourse(courseDir) {
   courseware.problem_source = archiveProblems(out, courseDir, plan, parts)
   fs.writeFileSync(path.join(out, 'courseware.json'), JSON.stringify(courseware, null, 2) + '\n')
 
+  // courseware.json 校验：硬规则违规中止导出，软规则仅提示（规则见 courseware-check.mjs）
+  const cwCheck = checkCoursewareFile(path.join(out, 'courseware.json'))
+  for (const v of cwCheck) {
+    const line = `[courseware-check] ${v.level === 'hard' ? 'FAIL' : 'warn'} ${v.rule}${v.node ? ' [' + v.node + ']' : ''} ${v.message}`
+    if (v.level === 'hard') throw new Error(line)
+    console.warn(line)
+  }
+
   fs.writeFileSync(path.join(cwDir, 'course.json'), JSON.stringify({
     schemaVersion: 1,
     courseId: courseId,
@@ -421,6 +435,12 @@ function exportCourse(courseDir) {
   const figureSpec = fs.existsSync(figureSpecPath) ? JSON.parse(fs.readFileSync(figureSpecPath, 'utf8')) : null
   writeLessonFiles(path.join(runtimeDir, 'lesson'), plan, courseware, figureSpec)
   assembleRuntime(runtimeDir, profile)
+  // 每课件独有样式钩子：作者在 _output_/{course}/lesson/styles/lesson.css 提供的样式
+  // 覆盖到 runtime/lesson/styles/lesson.css（在 profile 覆盖层之后，作者优先）
+  const authorLessonCss = path.join(courseDir, 'lesson', 'styles', 'lesson.css')
+  if (fs.existsSync(authorLessonCss)) {
+    fs.copyFileSync(authorLessonCss, path.join(runtimeDir, 'lesson', 'styles', 'lesson.css'))
+  }
   writeEngineManifest(path.join(runtimeDir, 'src'), profile)
   writeEngineCss(path.join(runtimeDir, 'src'), profile)
   fs.mkdirSync(path.join(cwDir, 'scripts'), { recursive: true })

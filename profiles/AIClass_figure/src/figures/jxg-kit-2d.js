@@ -157,6 +157,16 @@
     if (!visible && typeof el.hideElement === 'function') el.hideElement();
   }
 
+  // 只恢复描边/填充，绝不改 visible：否则复位会把已显示的路线藏起来再画出，整图闪一下
+  function styleFromBase(baseAttrs) {
+    var out = {};
+    if (!baseAttrs) return out;
+    ['strokeColor', 'strokeWidth', 'strokeOpacity', 'fillColor', 'fillOpacity'].forEach(function (key) {
+      if (baseAttrs[key] !== undefined) out[key] = baseAttrs[key];
+    });
+    return out;
+  }
+
   function highlightAttrs(el, baseAttrs) {
     var width = baseAttrs && typeof baseAttrs.strokeWidth === 'number' ? baseAttrs.strokeWidth + 1.5 : 4;
     var attrs = { strokeColor: HIGHLIGHT_COLOR, strokeWidth: width, strokeOpacity: 1 };
@@ -237,6 +247,62 @@
     }, 220);
   }
 
+  function withBoardPaused(board, fn) {
+    var paused = false;
+    if (board && typeof board.suspendUpdate === 'function') {
+      board.suspendUpdate();
+      paused = true;
+    }
+    try { fn(); }
+    finally {
+      if (paused && board && typeof board.unsuspendUpdate === 'function') board.unsuspendUpdate();
+    }
+  }
+
+  // highlightSeq / highlightRotate：分组顺序高亮（路线动画）
+  // targets 为数组的数组（每组一批元素），按组依次高亮；rotate 时每组点亮前先熄灭上一组
+  function runHighlightSequence(board, els, action, base, rotate) {
+    var delay = typeof action.delay === 'number' ? action.delay : 1200;
+    var startDelay = typeof action.startDelay === 'number' ? action.startDelay : 450;
+    var groups = normalizeTargets(action.targets).map(function (t) { return Array.isArray(t) ? t : [t]; });
+    board._animGen = (board._animGen || 0) + 1;
+    var gen = board._animGen;
+    var prev = [];
+
+    function paintGroup(group, highlight) {
+      withBoardPaused(board, function () {
+        group.forEach(function (id) {
+          var el = resolveTarget(els, id);
+          if (!el) {
+            console.error('[JXGKit2D] action highlightSeq 引用未知目标: ' + id);
+            return;
+          }
+          if (highlight) {
+            el.setAttribute(highlightAttrs(el, base && base[id]));
+            prev.push({ id: id, el: el });
+          } else {
+            el.setAttribute(styleFromBase(base && base[id]));
+          }
+        });
+      });
+    }
+
+    groups.forEach(function (group, gi) {
+      setTimeout(function () {
+        if (board._animGen !== gen) return;
+        if (rotate && prev.length) {
+          withBoardPaused(board, function () {
+            prev.forEach(function (entry) {
+              entry.el.setAttribute(styleFromBase(base && base[entry.id]));
+            });
+            prev = [];
+          });
+        }
+        paintGroup(group, true);
+      }, startDelay + gi * delay);
+    });
+  }
+
   /**
    * 按数组顺序执行 plan 的 figure.actions[]。
    * 目标按 spec 稳定构件 id 解析；未知 op / 目标报 console.error，不静默跳过。
@@ -245,6 +311,8 @@
     (actions || []).forEach(function (action) {
       if (!action) return;
       var op = action.op || action.type;
+      if (op === 'highlightSeq') { runHighlightSequence(board, els, action, base, false); return; }
+      if (op === 'highlightRotate') { runHighlightSequence(board, els, action, base, true); return; }
       var ids = normalizeTargets(action.targets && action.targets.length ? action.targets : null)
         .concat(action.target ? [action.target] : []);
       var resolved = ids.map(function (id) {
@@ -291,9 +359,20 @@
               console.error('[JXGKit2D] action label 缺少可用位置（at 或可定位 target）');
               return;
             }
-            var labelEl = createBoardLabel(board, pos[0], pos[1], action.text, action.labelAttrs);
-            if (!Array.isArray(els._dynamic)) els._dynamic = [];
-            els._dynamic.push(labelEl);
+            // 幂等去重：同一位置同一文字的动态标签已存在时跳过。
+            // 各拍 figureState 会把前面所有标签重复声明，重复创建会让同位置堆叠多个
+            // HTML 覆盖层 div，创建瞬间整板重绘时新旧副本短暂错位 → 可见残影。
+            var labelKey = String(action.text) + '@' + pos[0] + ',' + pos[1];
+            var hasDup = false;
+            (els._dynamic || []).forEach(function (el) {
+              if (el && el.__labelKey === labelKey) hasDup = true;
+            });
+            if (!hasDup) {
+              var labelEl = createBoardLabel(board, pos[0], pos[1], action.text, action.labelAttrs);
+              labelEl.__labelKey = labelKey;
+              if (!Array.isArray(els._dynamic)) els._dynamic = [];
+              els._dynamic.push(labelEl);
+            }
           } else {
             resolved.forEach(function (entry) {
               entry.el.setAttribute({ withLabel: true, visible: true });

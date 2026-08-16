@@ -2,12 +2,11 @@
 // 题干图（可选 stemImage）+ A.B.C.D 四个选项，每个选项字母后紧跟原图，点击图片放大查看。
 ;(function () {
   function assetBase() {
-    // 预览/导出都经 exportCourse，renderIndex 会把 __COURSE_BOOT.lessonRoot 重写为
-    // 'courseware/runtime/lesson'；资源拷贝在 'courseware/runtime/assets'，故取 lessonRoot 去 /lesson。
+    // 导出页 lessonRoot = courseware/runtime/lesson，图片在 courseware/assets/
     var boot = window.__COURSE_BOOT || {}
     var lesson = boot.lessonRoot || 'lesson'
     if (typeof lesson !== 'string' || lesson.indexOf('/') < 0) return ''
-    return lesson.replace(/\/lesson$/, '')
+    return lesson.replace(/\/runtime\/lesson$/, '').replace(/\/lesson$/, '')
   }
 
   function resolveAsset(image) {
