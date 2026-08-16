@@ -436,12 +436,19 @@
 
   function applyContainerChrome(c, state, instant, isForward) {
     if (!c || !state) return
+    // 先记 figureHidden，再 setFigureState（内部/异步可能动 is-illust）
+    if (typeof c.setFigureHidden === 'function') {
+      c.setFigureHidden(state.figureHidden === true)
+    }
     if (state.figureState && typeof c.setFigureState === 'function') {
       c.setFigureState(state.figureState, {
         stepId: state.id,
         action: state.action,
         instant: instant || !isForward
       })
+    }
+    if (typeof c.setFigureHidden === 'function') {
+      c.setFigureHidden(state.figureHidden === true)
     }
     if (state.outlineIndex != null && typeof c.setGuidanceGroup === 'function') {
       var guideGroup = guideGroupFromState(state)

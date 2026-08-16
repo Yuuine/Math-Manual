@@ -176,6 +176,7 @@
 }
 
 .course-container[data-layout="left-right"] .course-figure {
+  position: relative;
   flex: 0 0 var(--cc-figure-width, 22.5rem);
   width: var(--cc-figure-width, 22.5rem);
   max-width: var(--cc-figure-max-width, 26.25rem);
@@ -184,8 +185,97 @@
   border-radius: 0.5rem;
   background: rgba(59, 130, 246, 0.06);
   display: flex;
-  align-items: center;
-  justify-content: center;
+  -webkit-align-items: stretch;
+  align-items: stretch;
+}
+
+.course-container[data-layout="left-right"] .course-figure-board {
+  width: 100%;
+  height: 100%;
+  min-height: 20rem;
+  -webkit-flex: 1 1 auto;
+  flex: 1 1 auto;
+}
+
+.course-container[data-layout="left-right"] .course-figure-content {
+  display: none;
+  width: 100%;
+  max-width: 100%;
+  padding: 0.5rem;
+  box-sizing: border-box;
+}
+
+/* 读题插图：图板仍占位撑起左栏（不能 absolute 脱流，否则量到 0 高）。
+   插图本身绝对铺满左栏，避免 img 作为 flex 子项按原图尺寸居中缩在中间。 */
+.course-container[data-layout="left-right"] .course-figure.is-illust {
+  -webkit-align-self: stretch;
+  align-self: stretch;
+  min-height: 20rem;
+  overflow: hidden;
+}
+
+/* 插图盖住图板即可。不能 visibility:hidden：Chrome 51 下 SVG 线段不会随可见性恢复，只剩 HTML 文字。 */
+.course-container[data-layout="left-right"] .course-figure.is-illust .course-figure-board {
+  pointer-events: none;
+  opacity: 0;
+}
+
+.course-container[data-layout="left-right"] .course-figure.is-illust .course-figure-content {
+  display: block;
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  width: auto;
+  height: auto;
+  padding: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: #eef4fb;
+}
+
+.course-container[data-layout="left-right"] .course-figure-content .tx-illus-vertical,
+.course-container[data-layout="left-right"] .course-figure-content .lf-block {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+.course-container[data-layout="left-right"] .course-figure-content img,
+.course-container[data-layout="left-right"] .course-figure-content .tx-illus-vertical img {
+  display: block;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  object-fit: contain;
+  object-position: center center;
+}
+
+.course-container[data-layout="left-right"] .course-figure > .cc-illust-img {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  margin: 0;
+  border: 0;
+  object-fit: contain;
+  object-position: center center;
+}
+
+/* 仅 figure-spec 纯插图态才露出 cc-illust-img；plan 左栏 HTML 配图不要被空 img 盖住 */
+.course-container[data-layout="left-right"] .course-figure.is-illust[data-spec-illust="true"] > .cc-illust-img {
+  display: block;
 }
 
 .course-container[data-layout="left-right"] .course-figure > svg {
@@ -281,7 +371,7 @@
 
 /* ── interleaved 交错引导模式 ── */
 .course-container[data-guidance-layout="interleaved"] {
-  --cc-guide-rail-x: 25px;
+  --cc-guide-rail-x: 1.5625rem; /* 25px @16 */
 }
 
 .course-container[data-guidance-layout="interleaved"] .cc-guide-panel.cc-guide-panel--collapsed {

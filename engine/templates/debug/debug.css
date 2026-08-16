@@ -325,6 +325,11 @@ body.is-resizing-log {
   line-height: 1.35;
 }
 
+.desc.is-empty {
+  font-style: italic;
+  opacity: 0.7;
+}
+
 .desc.is-editable {
   cursor: text;
   border-radius: 4px;

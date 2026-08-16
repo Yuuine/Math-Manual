@@ -45,7 +45,11 @@
           { left: '$',  right: '$',  display: false }
         ],
         throwOnError: false,
-        errorColor: '#e53935'
+        errorColor: '#e53935',
+        // 允许 \htmlClass 给分母打荧光笔 / 相消划线（6-21 等）
+        trust: function (ctx) {
+          return !!(ctx && ctx.command === '\\htmlClass')
+        }
       })
     } catch (e) { /* 已被 throwOnError:false 静默 */ }
   }

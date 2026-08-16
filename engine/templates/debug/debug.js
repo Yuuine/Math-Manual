@@ -401,13 +401,15 @@
     }
   }
 
+  function actionEntryName(entry) {
+    if (entry == null || entry === '') return ''
+    if (typeof entry === 'object') return entry.name ? String(entry.name) : ''
+    return String(entry)
+  }
+
   function nodeActionNames(node) {
     if (!node || !node.action) return []
-    return node.action.map(function (entry) {
-      if (typeof entry === 'string') return entry
-      if (entry && entry.name) return String(entry.name)
-      return ''
-    }).filter(Boolean)
+    return node.action.map(actionEntryName).filter(Boolean)
   }
 
   function goNext() {
@@ -880,16 +882,15 @@
     nameEl.className = 'name'
     nameEl.textContent = item.label || item.name
     body.appendChild(nameEl)
-    if (item.description || (courseRootHandle && editByAction[item.name] && editByAction[item.name].editable)) {
-      var descEl = document.createElement('div')
-      descEl.className = 'desc'
-      var editable = !!(courseRootHandle && editByAction[item.name] && editByAction[item.name].editable)
-      if (editable) {
-        descEl.classList.add('is-editable')
-        descEl.title = '点击编辑口播稿'
-      }
-      descEl.textContent = item.description || '（暂无口播稿，点击补充）'
-      if (editable) {
+    var descEl = document.createElement('div')
+    descEl.className = 'desc' + (item.description ? '' : ' is-empty')
+    var editable = !!(courseRootHandle && editByAction[item.name] && editByAction[item.name].editable)
+    if (editable) {
+      descEl.classList.add('is-editable')
+      descEl.title = '点击编辑口播稿'
+    }
+    descEl.textContent = item.description || '（无口播）'
+    if (editable) {
         descEl.addEventListener('click', function (event) {
           event.stopPropagation()
           if (descEl.classList.contains('is-editing')) return
@@ -928,7 +929,7 @@
           cancel.onclick = function (e) {
             e.stopPropagation()
             descEl.classList.remove('is-editing')
-            descEl.textContent = item.description || '（暂无口播稿，点击补充）'
+            descEl.textContent = item.description || '（无口播）'
           }
           save.onclick = function (e) {
             e.stopPropagation()
@@ -942,10 +943,9 @@
             if (e.key === 'Escape') cancel.click()
             if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) save.click()
           })
-        })
-      }
-      body.appendChild(descEl)
+      })
     }
+    body.appendChild(descEl)
 
     btn.appendChild(tag)
     btn.appendChild(body)
@@ -1035,27 +1035,7 @@
     updateStepStat()
   }
 
-  function buildCoursewareCatalog(data) {
-    var items = []
-    if (!data || !Array.isArray(data.nodes)) return items
-    ;(data.nodes || []).forEach(function (node) {
-      var name = node.action && node.action.length ? node.action[0] : node.id
-      items.push(buildCatalogItem({
-        name: name,
-        catalogKey: node.id || name,
-        dispatchName: name,
-        dispatchParams: {},
-        zone: 'main',
-        tag: node.type === 'question' ? 'main' : 'main',
-        moduleTitle: node.flow_id || null,
-        moduleId: null,
-        sideEffect: false,
-        stepId: node.id || '',
-        description: node.text || '',
-        label: name,
-        params: []
-      }))
-    })
+  function pushResetItem(items) {
     items.push(buildCatalogItem({
       name: '清空课件',
       dispatchName: RESET_ACTION,
@@ -1066,37 +1046,147 @@
     return items
   }
 
-  function applyCourseware(data) {
-    if (data == null) return
-    lessonTitle = data.title || ''
-    cwNodes = (data.nodes || []).slice()
-    catalog = buildCoursewareCatalog(data)
+  function catalogItemFromStep(opts) {
+    var name = opts.name
+    if (!name) return null
+    return buildCatalogItem({
+      name: name,
+      catalogKey: opts.catalogKey || name,
+      dispatchName: name,
+      dispatchParams: {},
+      zone: 'main',
+      tag: 'main',
+      moduleTitle: opts.flowId || null,
+      moduleId: null,
+      sideEffect: false,
+      stepId: opts.stepId || '',
+      description: opts.description || '',
+      label: name,
+      params: []
+    })
+  }
+
+  // 主编排时间线：每一拍都是一个 action，无口播也列出
+  function buildCatalogFromPlan(plan) {
+    var items = []
+    var timeline = (plan && plan.timeline) || []
+    timeline.forEach(function (state) {
+      if (!state) return
+      var item = catalogItemFromStep({
+        name: actionEntryName(state.action && state.action[0]) || state.id,
+        catalogKey: state.id || '',
+        stepId: state.id || '',
+        flowId: state.flow_id,
+        description: state.text || ''
+      })
+      if (item) items.push(item)
+    })
+    return pushResetItem(items)
+  }
+
+  // courseware.json 回退：把节点 action[]（含 {name,at} 并入项）全部摊开
+  function buildCoursewareCatalog(data) {
+    var items = []
+    if (!data || !Array.isArray(data.nodes)) return items
+    ;(data.nodes || []).forEach(function (node) {
+      var actions = node.action && node.action.length ? node.action : [node.id]
+      actions.forEach(function (entry, idx) {
+        var name = actionEntryName(entry) || node.id
+        var isHost = idx === 0
+        var item = catalogItemFromStep({
+          name: name,
+          catalogKey: isHost ? (node.id || name) : (node.id + ':' + name),
+          stepId: isHost ? (node.id || '') : name,
+          flowId: node.flow_id,
+          description: isHost ? (node.text || '') : ''
+        })
+        if (item) items.push(item)
+      })
+    })
+    return pushResetItem(items)
+  }
+
+  function applyLessonData(cw, plan) {
+    if (cw) {
+      lessonTitle = cw.title || (plan && plan.title) || ''
+      cwNodes = (cw.nodes || []).slice()
+    } else if (plan) {
+      lessonTitle = plan.title || ''
+      cwNodes = []
+    } else {
+      return
+    }
+    if (plan && plan.timeline && plan.timeline.length) {
+      catalog = buildCatalogFromPlan(plan)
+    } else if (cw) {
+      catalog = buildCoursewareCatalog(cw)
+    } else {
+      catalog = []
+    }
     sidebarHead.textContent = lessonTitle ? '课纲 · ' + lessonTitle : '课纲'
     renderList()
     updateStepStat()
   }
 
-  function loadCourseware() {
+  function applyCourseware(data) {
+    applyLessonData(data, window.MASTER_PLAN || null)
+  }
+
+  function loadJson(url, cb) {
     var xhr = new XMLHttpRequest()
-    xhr.open('GET', '../courseware.json', true)
+    xhr.open('GET', url, true)
     xhr.onreadystatechange = function () {
       if (xhr.readyState !== 4) return
       if (xhr.status >= 200 && xhr.status < 300) {
-        try { applyCourseware(JSON.parse(xhr.responseText)); return }
-        catch (e) { /* fall through */ }
+        try {
+          cb(JSON.parse(xhr.responseText))
+          return
+        } catch (e) { /* fall through */ }
       }
-      if (window.MASTER_COURSEWARE) { applyCourseware(window.MASTER_COURSEWARE); return }
-      var s = document.createElement('script')
-      s.src = '../courseware/courseware.js'
-      s.onload = function () { if (window.MASTER_COURSEWARE) applyCourseware(window.MASTER_COURSEWARE) }
-      s.onerror = function () { setStat('courseware.json 加载失败', 'err') }
-      document.head.appendChild(s)
+      cb(null)
     }
-    xhr.onerror = function () {
-      if (window.MASTER_COURSEWARE) applyCourseware(window.MASTER_COURSEWARE)
-      else setStat('courseware.json 加载失败', 'err')
-    }
+    xhr.onerror = function () { cb(null) }
     xhr.send()
+  }
+
+  function loadScript(src, cb) {
+    var s = document.createElement('script')
+    s.src = src
+    s.onload = function () { cb(true) }
+    s.onerror = function () { cb(false) }
+    document.head.appendChild(s)
+  }
+
+  function loadPlanThen(cw) {
+    loadJson('plan.json', function (plan) {
+      if (plan && plan.timeline) {
+        applyLessonData(cw, plan)
+        return
+      }
+      if (window.MASTER_PLAN && window.MASTER_PLAN.timeline) {
+        applyLessonData(cw, window.MASTER_PLAN)
+        return
+      }
+      loadScript('runtime/lesson/plan.js', function () {
+        applyLessonData(cw, window.MASTER_PLAN || null)
+      })
+    })
+  }
+
+  function loadCourseware() {
+    loadJson('../courseware.json', function (cw) {
+      if (cw) {
+        loadPlanThen(cw)
+        return
+      }
+      if (window.MASTER_COURSEWARE) {
+        loadPlanThen(window.MASTER_COURSEWARE)
+        return
+      }
+      loadScript('../courseware/courseware.js', function () {
+        loadPlanThen(window.MASTER_COURSEWARE || null)
+      })
+    })
   }
 
   // 判题：当前 question 节点，对照 answer → test 分支 → 下发下一 action
@@ -1111,15 +1201,15 @@
     var next = null
     for (var j = 0; j < cwNodes.length; j++) if (cwNodes[j].id === nextId) { next = cwNodes[j]; break }
     if (!next || !next.action || !next.action.length) return
-    setTimeout(function () { send(next.action[0]) }, 250)
+    setTimeout(function () { send(actionEntryName(next.action[0]) || next.id) }, 250)
   }
 
   function normalizeActionName(action) {
     if (action == null) return ''
     if (Object.prototype.toString.call(action) === '[object Array]') {
-      return action.length ? String(action[0]) : ''
+      return action.length ? actionEntryName(action[0]) : ''
     }
-    return String(action)
+    return actionEntryName(action)
   }
 
   function handleInbound(d) {

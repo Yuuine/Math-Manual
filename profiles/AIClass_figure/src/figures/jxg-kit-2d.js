@@ -352,11 +352,12 @@
   function draw(board, figure) {
     figure = figure || {};
     var points = {};
-    var segments = [];
-    var lines = [];
-    var polygons = [];
-    var circles = [];
-    var texts = [];
+    var segments = {};
+    var lines = {};
+    var polygons = {};
+    var circles = {};
+    var arcs = {};
+    var texts = {};
 
     var srcPoints = figure.points || {};
     Object.keys(srcPoints).forEach(function (name) {
@@ -387,7 +388,13 @@
       points[name] = board.create('point', coords, pointAttrs);
     });
 
-    function addEdge(item, type, sink) {
+    function elementId(attrs, fallback) {
+      if (attrs && attrs.id != null && attrs.id !== '') return String(attrs.id);
+      if (attrs && attrs.name != null && attrs.name !== '') return String(attrs.name);
+      return fallback;
+    }
+
+    function addEdge(item, type, sink, index) {
       var from;
       var to;
       var attrs = {};
@@ -402,22 +409,25 @@
         delete attrs.from;
         delete attrs.to;
       }
+      var id = elementId(attrs, type + '-' + index);
+      // JSXGraph 用 name 做稳定标识；spec 的 id 必须落到 name，否则 state.show 找不到
+      if (attrs.name == null) attrs.name = id;
       var el = board.create(
         type,
         [resolvePoint(points, from), resolvePoint(points, to)],
         assign({}, DEFAULT_SEGMENT, attrs)
       );
-      sink.push(el);
+      sink[id] = el;
     }
 
-    (figure.segments || []).forEach(function (item) {
-      addEdge(item, 'segment', segments);
+    (figure.segments || []).forEach(function (item, index) {
+      addEdge(item, 'segment', segments, index);
     });
-    (figure.lines || []).forEach(function (item) {
-      addEdge(item, 'line', lines);
+    (figure.lines || []).forEach(function (item, index) {
+      addEdge(item, 'line', lines, index);
     });
 
-    (figure.polygons || []).forEach(function (poly) {
+    (figure.polygons || []).forEach(function (poly, index) {
       var vertNames = poly.vertices || poly.points || [];
       var verts = vertNames.map(function (v) {
         return resolvePoint(points, v);
@@ -436,10 +446,12 @@
       delete attrs.points;
       delete attrs.vertexStyle;
       attrs.vertices = poly.vertexStyle || { visible: false, fixed: true };
-      polygons.push(board.create('polygon', verts, attrs));
+      var id = elementId(attrs, 'poly-' + index);
+      if (attrs.name == null) attrs.name = id;
+      polygons[id] = board.create('polygon', verts, attrs);
     });
 
-    (figure.circles || []).forEach(function (cir) {
+    (figure.circles || []).forEach(function (cir, index) {
       var parents;
       if (cir.through != null) {
         parents = [resolvePoint(points, cir.center), resolvePoint(points, cir.through)];
@@ -453,11 +465,12 @@
       delete attrs.center;
       delete attrs.through;
       delete attrs.radius;
-      circles.push(board.create('circle', parents, attrs));
+      var id = elementId(attrs, 'cir-' + index);
+      if (attrs.name == null) attrs.name = id;
+      circles[id] = board.create('circle', parents, attrs);
     });
 
-    var arcs = [];
-    (figure.arcs || []).forEach(function (arc) {
+    (figure.arcs || []).forEach(function (arc, index) {
       var center = resolvePoint(points, arc.center);
       var from = resolvePoint(points, arc.from || arc.start);
       var to = resolvePoint(points, arc.to || arc.end);
@@ -470,10 +483,12 @@
       delete attrs.start;
       delete attrs.to;
       delete attrs.end;
-      arcs.push(board.create('arc', [center, from, to], attrs));
+      var id = elementId(attrs, 'arc-' + index);
+      if (attrs.name == null) attrs.name = id;
+      arcs[id] = board.create('arc', [center, from, to], attrs);
     });
 
-    (figure.texts || []).forEach(function (t) {
+    (figure.texts || []).forEach(function (t, index) {
       var at = t.at;
       var norm = normalizeFigureText(t.text);
       var content = norm.text;
@@ -491,7 +506,9 @@
       );
       delete attrs.at;
       delete attrs.text;
-      texts.push(board.create('text', parents, attrs));
+      var id = elementId(attrs, 'text-' + index);
+      if (attrs.name == null) attrs.name = id;
+      texts[id] = board.create('text', parents, attrs);
     });
 
     return {

@@ -14,7 +14,7 @@
     style = style || {}
     var map = {
       '--cc-edge-pad': toCssSize(layoutParams.edgePad),
-      '--cc-scroll-padding': layoutParams.scrollPadding,
+      '--cc-scroll-padding': toCssSize(layoutParams.scrollPadding),
       '--cc-gap': toCssSize(layoutParams.gap),
       '--cc-text-max-width': toCssSize(layoutParams.textMaxWidth),
       '--cc-text-align': layoutParams.textAlign,
@@ -46,6 +46,7 @@
     if (layout === 'left-right') {
       var lr = block.region || block.zone || 'right'
       if (lr === 'top') return 'top'
+      if (lr === 'left' || lr === 'figure') return 'left'
       if (lr === 'pinned' || lr === 'overlay' || lr === 'bottom') return 'right'
       if (lr === 'bottom-right' || lr === 'right') return 'right'
       return 'right'
@@ -60,6 +61,7 @@
     }
     if (container.layout === 'left-right') {
       if (region === 'top') return container.scrollEl
+      if (region === 'left') return container.figureContentEl || container.figureSlot
       return container.scrollStackEl || container.scrollRightEl
     }
     return container.scrollEl
@@ -70,7 +72,12 @@
       return [container.scrollEl, container.scrollRightEl, container.scrollStackEl].filter(Boolean)
     }
     if (container.layout === 'left-right') {
-      return [container.scrollEl, container.scrollRightEl, container.scrollStackEl].filter(Boolean)
+      return [
+        container.scrollEl,
+        container.scrollRightEl,
+        container.scrollStackEl,
+        container.figureContentEl
+      ].filter(Boolean)
     }
     return container.scrollEl ? [container.scrollEl] : []
   }
@@ -413,6 +420,22 @@
     })
   }
 
+  CourseContainer.prototype.setFigureHidden = function (hidden) {
+    this._figureHidden = !!hidden
+    if (!this.figureSlot) return
+    if (this.figureSlot.classList) {
+      if (hidden) {
+        this.figureSlot.classList.add('is-illust')
+      } else if (this.figureSlot.getAttribute('data-spec-illust') !== 'true') {
+        // figure-spec 插图态也用 is-illust；figureHidden=false 不能把左栏图揭掉
+        this.figureSlot.classList.remove('is-illust')
+      }
+    }
+    if (!hidden && this.figureHost && typeof this.figureHost.resize === 'function') {
+      this.figureHost.resize()
+    }
+  }
+
   CourseContainer.prototype.setFigureState = function (state, opts) {
     opts = opts || {}
     if (this.figureHost && typeof this.figureHost.setState === 'function') {
@@ -421,6 +444,8 @@
         instant: opts.instant === true,
         action: opts.action || null
       })
+      // setState 可能同步/异步清掉 is-illust；按 plan 的 figureHidden 再盖回去
+      if (this._figureHidden) this.setFigureHidden(true)
       return
     }
     if (state != null && !this._figureHostMissingWarned) {
@@ -848,8 +873,15 @@
       if (layout === 'left-right' && options.figure) {
         figureSlot = document.createElement('div')
         figureSlot.className = 'course-figure'
+        var figureBoard = document.createElement('div')
+        figureBoard.className = 'course-figure-board'
+        figureSlot.appendChild(figureBoard)
+        var figureContent = document.createElement('div')
+        figureContent.className = 'course-figure-content'
+        figureSlot.appendChild(figureContent)
+        container.figureContentEl = figureContent
         if (typeof window.AIClassFigureHost !== 'undefined') {
-          container.figureHost = new window.AIClassFigureHost(figureSlot, options.figure, {})
+          container.figureHost = new window.AIClassFigureHost(figureBoard, options.figure, {})
         } else {
           console.warn(
             '[CourseContainer] left-right 含 figure 但 AIClassFigureHost 未加载；' +
@@ -858,7 +890,7 @@
           var missing = document.createElement('div')
           missing.className = 'course-figure-placeholder'
           missing.textContent = 'figure（未装配 host）'
-          figureSlot.appendChild(missing)
+          figureBoard.appendChild(missing)
         }
         mainRow.appendChild(figureSlot)
       }

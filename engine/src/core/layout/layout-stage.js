@@ -40,8 +40,8 @@
 
     // 兼容变量固定 1/0：mathlive / viewport-scale 走 no-op
     document.documentElement.style.setProperty('--lf-board-scale', '1')
-    document.documentElement.style.setProperty('--lf-board-offset-x', '0px')
-    document.documentElement.style.setProperty('--lf-board-offset-y', '0px')
+    document.documentElement.style.setProperty('--lf-board-offset-x', '0rem')
+    document.documentElement.style.setProperty('--lf-board-offset-y', '0rem')
 
     if (bg) {
       // 网格背景随 rem 缩放（20px 设计 = 1.25rem，100px = 6.25rem）

@@ -270,6 +270,12 @@ function writeLessonFiles(lessonDir, plan, courseware, figureSpec) {
   fs.writeFileSync(path.join(lessonDir, 'styles', 'lesson.css'), '')
 }
 
+function copyLessonCss(courseDir, runtimeDir) {
+  const src = path.join(courseDir, 'lesson.css')
+  const dest = path.join(runtimeDir, 'lesson', 'styles', 'lesson.css')
+  if (fs.existsSync(src)) copyFileInto(src, dest)
+}
+
 // ---- 拷贝 engine src + profile 差异 ----
 function copyTree(from, to) {
   if (!fs.existsSync(from)) return
@@ -411,18 +417,27 @@ function exportCourse(courseDir) {
   fs.writeFileSync(path.join(cwDir, 'plan.json'), JSON.stringify(plan, null, 2) + '\n')
   fs.writeFileSync(path.join(cwDir, 'courseware.js'), jsWrap('MASTER_COURSEWARE', courseware))
 
-  // 资产
-  const assetsDir = path.join(courseDir, 'assets')
-  if (fs.existsSync(assetsDir)) copyTree(assetsDir, path.join(cwDir, 'assets'))
-
   // runtime + scripts + debug
   const runtimeDir = path.join(cwDir, 'runtime')
   const figureSpecPath = path.join(courseDir, 'figure-spec.json')
   const figureSpec = fs.existsSync(figureSpecPath) ? JSON.parse(fs.readFileSync(figureSpecPath, 'utf8')) : null
   writeLessonFiles(path.join(runtimeDir, 'lesson'), plan, courseware, figureSpec)
+  copyLessonCss(courseDir, runtimeDir)
   assembleRuntime(runtimeDir, profile)
   writeEngineManifest(path.join(runtimeDir, 'src'), profile)
   writeEngineCss(path.join(runtimeDir, 'src'), profile)
+
+  // 资产：题干/插图给 courseware/assets，运行时 html/figure 读 courseware/runtime/assets
+  const assetsDir = path.join(courseDir, 'assets')
+  if (fs.existsSync(assetsDir)) {
+    copyTree(assetsDir, path.join(out, 'assets'))
+    copyTree(assetsDir, path.join(cwDir, 'assets'))
+    copyTree(assetsDir, path.join(runtimeDir, 'assets'))
+  }
+  const lessonCssSrc = path.join(courseDir, 'lesson.css')
+  if (fs.existsSync(lessonCssSrc)) {
+    copyFileInto(lessonCssSrc, path.join(runtimeDir, 'lesson', 'styles', 'lesson.css'))
+  }
   fs.mkdirSync(path.join(cwDir, 'scripts'), { recursive: true })
   fs.writeFileSync(path.join(cwDir, 'scripts', 'smoke-test.mjs'), '// 冒烟测试占位\n')
   // 调试壳：courseware/debug.html（+ debug.css + debug.js）

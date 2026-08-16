@@ -45,7 +45,7 @@
 
 ## 5. 单位与字号
 
-- 字号与核心尺寸统一 `rem`（16px 基准）。**双模式**：hosted 模式（宿主提供 `matrix-content` 根节点，无 transform）随宿主 `html` 根字号（`BASE_W = 667`）等比缩放；独立/调试模式根字号恒为默认 16px，由舞台 `transform: scale` 缩放，rem 与 px 等价。两者按模式互斥、不叠加。
+- 字号与核心尺寸统一 `rem`（16px 基准）。**双模式**：hosted 模式（宿主提供 `matrix-content` 根节点）不改写根字号，随宿主 `html` 根字号（`BASE_W = 667`）等比缩放；独立/调试模式由 `layout-stage` 按 `16px × (视口宽 / 设计宽)` 写 `html` 根字号，舞台 `transform: none`（不再叠 `scale`）。两者按模式互斥、不叠加。
 - 禁止用 `vw` / `vh` 作为字号或核心尺寸（iOS 地址栏 / Android WebView 高度抖动）。
 - 禁止 `100vh` 全屏高度链；全屏用 `100%` 链式继承或 `position: fixed; top:0; right:0; bottom:0; left:0`（`inset` 简写为 Chrome 87+，禁用）。
 - 最小正文 ≥ `0.875rem`（基准 16px 下 ≈ 14px）。

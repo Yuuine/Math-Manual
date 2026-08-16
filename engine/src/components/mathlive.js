@@ -114,8 +114,8 @@
     if (state.docked) {
       panel.style.left = 'auto'
       panel.style.top = 'auto'
-      panel.style.right = '8px'
-      panel.style.bottom = '8px'
+      panel.style.right = '0.5rem' /* 8px @16 */
+      panel.style.bottom = '0.5rem'
       panel.style.transformOrigin = 'right bottom'
       return
     }

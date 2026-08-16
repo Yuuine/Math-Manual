@@ -220,9 +220,22 @@ function decouplePracticePhoto(states, maps) {
   const first = rest.find((s) => s && containerIdx(s, maps) === practiceIdx)
   if (!first) return states
 
-  const isStem = (b) => b && (b.region === 'top' || /\bstem\b/.test(String(b.class || '')))
-  const stem = (first.blocks || []).find(isStem)
+  const isStem = (b) => b && (
+    b.region === 'top' ||
+    b.region === 'left' ||
+    /\bstem\b/.test(String(b.class || '')) ||
+    /\billus\b/.test(String(b.class || ''))
+  )
+  const stemBlocks = (first.blocks || []).filter(isStem).map((b) => deepClone(b))
+  const stem = stemBlocks[0] || null
   const content = (first.blocks || []).filter((b) => !isStem(b))
+  // 练习大标题链挂在容器 seed 状态上；源包常写在拍照步，不能因审题步没有就删掉
+  const practiceOutline = (first.outline && first.outline.length)
+    ? first.outline
+    : (existingPhoto && existingPhoto.outline && existingPhoto.outline.length
+      ? existingPhoto.outline
+      : null)
+  if (practiceOutline && !first.outline) first.outline = practiceOutline
 
   // 题干步：无 outlineIndex → 引导链收起，只显示题干
   let stemStep
@@ -230,6 +243,7 @@ function decouplePracticePhoto(states, maps) {
     // first 已是题干步（只含题干）：复用，去掉 outlineIndex
     stemStep = first
     delete stemStep.outlineIndex
+    if (practiceOutline) stemStep.outline = practiceOutline
   } else {
     // first 是审题步（含内容）：拆出题干步；first 留作审题步（outlineIndex=0 激活审题）
     stemStep = {
@@ -241,10 +255,11 @@ function decouplePracticePhoto(states, maps) {
       action: ['练-题干'],
       next: null,
       test: [],
-      outline: first.outline || undefined,
+      outline: practiceOutline || undefined,
       figureTemplate: first.figureTemplate,
       figureState: first.figureState != null ? deepClone(first.figureState) : undefined,
-      blocks: stem ? [deepClone(stem)] : []
+      figureHidden: first.figureHidden === true ? true : undefined,
+      blocks: stemBlocks
     }
   }
   if (content.length > 0 && first.outline && first.outline.length && first.outlineIndex == null) {
@@ -266,13 +281,30 @@ function decouplePracticePhoto(states, maps) {
   photo.question_type = 'practice_main'
   photo.answer_type = 'course_photo'
   photo.answer = []
-  photo.blocks = stem ? [deepClone(stem)] : []
+  photo.blocks = stemBlocks.length ? stemBlocks.map((b) => deepClone(b)) : (stem ? [deepClone(stem)] : [])
   delete photo.outlineIndex
   delete photo._sections
-  if (first.outline) photo.outline = first.outline
+  if (practiceOutline) photo.outline = practiceOutline
   else delete photo.outline
   if (first.figureTemplate) photo.figureTemplate = first.figureTemplate
   if (first.figureState != null) photo.figureState = deepClone(first.figureState)
+  if (first.figureHidden === true || photo.figureHidden === true) {
+    photo.figureHidden = true
+    stemStep.figureHidden = true
+  }
+
+  const stemId = stemStep.id
+  if (photoId && stemId && photoId !== stemId) {
+    rest.forEach((s) => {
+      if (!s || s === stemStep || s === first) return
+      if (s.next === photoId) s.next = stemId
+      if (Array.isArray(s.test)) {
+        s.test = s.test.map((t) => (
+          t && t.next === photoId ? Object.assign({}, t, { next: stemId }) : t
+        ))
+      }
+    })
+  }
 
   const insertAt = rest.indexOf(first)
   if (content.length === 0) {

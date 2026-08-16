@@ -39,6 +39,10 @@
     ;(this.figure.reset || noop).call(this.figure)
   }
 
+  AIClassFigureHost.prototype.resize = function () {
+    if (this.figure && typeof this.figure.resize === 'function') this.figure.resize()
+  }
+
   AIClassFigureHost.prototype.setState = function (figureState, runtime) {
     if (!figureState) return
     if (!this.mounted) this.mount()

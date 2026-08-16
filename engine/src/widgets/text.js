@@ -95,7 +95,7 @@
   AIClassWidgetRegistry.register('text', function (el, block) {
     el.innerHTML = ''
     if (block.size === 'large') {
-      el.style.fontSize = 'calc(var(--cc-body-size, var(--lf-body-size, 1.5rem)) * 1.35)'
+      el.style.fontSize = 'var(--lf-scale-hero)'
       el.style.fontWeight = '600'
     } else {
       el.style.fontSize = ''
@@ -129,7 +129,7 @@
       el.appendChild(tag)
     }
     if (hasLead) {
-      var lead = document.createElement('span')
+      var lead = document.createElement(block.leadHtml ? 'div' : 'span')
       lead.className = 'lf-section-lead'
       if (block.leadHtml) {
         lead.innerHTML = AIClassWidgetRegistry.text(block.lead)

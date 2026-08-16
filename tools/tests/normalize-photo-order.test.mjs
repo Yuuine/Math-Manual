@@ -80,6 +80,7 @@ test('拍照练习解耦：已含 p-photo 的手写形态，重排后仍题干�
     { id: 'pr-stem', flow_id: 'flow_3', type: 'text', action: ['练-开始'], text: '', blocks: [p.timeline[1].blocks[0]] },
     p.timeline[2]
   ]
+  p.timeline[0].next = 'p-photo'
   const out = normalizePlan(p)
   const ids = out.timeline.map((s) => s.id)
   assert.ok(ids.indexOf('pr-stem') < ids.indexOf('p-photo'), '轻量路径下题干步仍在拍照步之前')
@@ -87,4 +88,46 @@ test('拍照练习解耦：已含 p-photo 的手写形态，重排后仍题干�
   assert.equal(photo.next, 'pr-n1', '拍照步 next 指向审题步')
   const stemStep = out.timeline[ids.indexOf('pr-stem')]
   assert.equal(stemStep.outlineIndex, undefined, '题干步引导链收起')
+  assert.equal(out.timeline[0].next, 'pr-stem', '上一拍若指向拍照，改挂到题干步')
+})
+
+test('拍照练习解耦：左栏插图算题干，不把读题步拆成审题', () => {
+  const p = makePlan()
+  p.quickQA = [{ id: 'qa-1', question: '问', answer: '答' }]
+  p.timeline[0].next = 'p-photo'
+  p.timeline[1].blocks = [
+    p.timeline[1].blocks[0],
+    {
+      id: 'p-illus',
+      type: 'text',
+      region: 'left',
+      class: 'tx-illus tx-illus-vertical',
+      replaceKey: 'p-illus',
+      lines: [{ html: true, text: '<img src="assets/a.png" alt="插图">' }]
+    }
+  ]
+  p.timeline[2].blocks = [
+    { id: 't-pr', type: 'text', region: 'main', lines: ['审题内容'] },
+    { id: 'sec-1', type: 'section', title: '审题', lines: ['先看题'] }
+  ]
+  p.timeline.splice(1, 0, {
+    id: 'p-photo',
+    flow_id: 'flow_3',
+    type: 'question',
+    head: '练',
+    action: ['练习-作答-拍照'],
+    next: 'pr-stem',
+    question_type: 'practice_main',
+    answer_type: 'course_photo',
+    answer: [],
+    blocks: [p.timeline[1].blocks[0]]
+  })
+  const out = normalizePlan(p)
+  const ids = out.timeline.map((s) => s.id)
+  assert.equal(ids.includes('pr-stem-stem'), false, '不因插图拆出额外题干步')
+  assert.ok(ids.indexOf('pr-stem') < ids.indexOf('p-photo'), '题干仍在拍照前')
+  const stemStep = out.timeline[ids.indexOf('pr-stem')]
+  assert.equal(stemStep.outlineIndex, undefined, '读题步引导链收起')
+  assert.ok((stemStep.blocks || []).some((b) => b.id === 'p-illus'), '插图留在题干步')
+  assert.equal(out.timeline[0].next, 'pr-stem')
 })
