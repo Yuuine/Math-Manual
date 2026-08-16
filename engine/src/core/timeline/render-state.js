@@ -570,6 +570,12 @@
 
     // 揭示锚点：正文滚动区内的最后一个新/替换块。
     // 顶栏题干（scroll-top）不是滚动目标——原位重渲染题干不该引起滚动。
+    // 大环节标题推进（outlineIndex 变化）也是跟滚信号：纯标题步（例-标题-*）无正文新块，
+    // 若只在 appended 里找锚点会漏掉，新标题卡在视口底边被切断（如 4-1-4star 例-标题-关键）。
+    var prevGroup = prev ? guideGroupFromState(prev) : null
+    var stateGroup = guideGroupFromState(state)
+    var guideChanged = stateGroup != null && stateGroup !== prevGroup
+
     var anchor = null
     if (appended && appended.length) {
       for (var ai = appended.length - 1; ai >= 0; ai--) {
@@ -582,6 +588,11 @@
         anchor = node
         break
       }
+    }
+    // 纯标题步：无正文锚点但推进了引导组 → 锚定容器，ScrollFollow 解析当前激活引导节
+    // （其标题 + 槽内容），把新大环节标题滚进视口；interleaved 下 slot 为空时取节标题。
+    if (!anchor && guideChanged && container && container.el) {
+      anchor = container.el
     }
     // 有新容器待对齐（pendingAlignStart）时，即使无正文 anchor（如仅顶栏题干）
     // 也要触发 follow——让外层滚到新容器顶部，否则新容器停在视口外不出现

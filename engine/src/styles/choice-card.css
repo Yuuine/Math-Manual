@@ -33,7 +33,7 @@
   border: 1px dashed rgba(37, 99, 235, 0.45);
   background: rgba(37, 99, 235, 0.1);
   color: #1d4ed8;
-  font-size: 0.78em;
+  font-size: var(--lf-scale-meta);
   font-weight: 700;
   letter-spacing: 0.04em;
 }
@@ -72,7 +72,7 @@
 }
 
 .course-container .cc-guide-sub .aic-choice-card__badge {
-  font-size: 0.78em;
+  font-size: var(--lf-scale-meta);
 }
 
 /* 穿插大纲槽位：卡片继承槽字号（= slot-size 0.92×body） */
@@ -82,10 +82,10 @@
 }
 
 .course-container[data-guidance-layout="interleaved"] .cc-guide-slot .aic-choice-card__badge {
-  font-size: 0.78em;
+  font-size: var(--lf-scale-meta);
 }
 
 .course-container[data-guidance-layout="interleaved"] .cc-guide-slot .aic-choice-card .aic-choice-option--paper,
 .course-container[data-guidance-layout="interleaved"] .cc-guide-slot .aic-choice-card .aic-choice-option--plain {
-  font-size: 0.88em;
+  font-size: var(--lf-scale-caption);
 }

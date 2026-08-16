@@ -208,7 +208,7 @@ function makeRevealBlocks(askBlocks, fullDeltaBlocks) {
 //   2. 拍照步：题干 + 相机（course_photo），outlineIndex 缺省 → 引导链仍收起。
 //   3. 审题步：outlineIndex=0 激活审题引导节 + 内容。
 // 兼容两种源结构：
-//   - first 只有题干（如 7-1-4star 练-开始）：复用为题干步，去掉其 outlineIndex，拍照插其后；
+//   - first 只有题干（练-开始 形态）：复用为题干步，去掉其 outlineIndex，拍照插其后；
 //   - first 含题干+内容（如 4-1-3star 练-审题）：拆出题干步，first 留作审题步，拍照插中间。
 function decouplePracticePhoto(states, maps) {
   const firstIdx = states.findIndex((s) => s && containerIdx(s, maps) > 0)
@@ -276,10 +276,12 @@ function decouplePracticePhoto(states, maps) {
 
   const insertAt = rest.indexOf(first)
   if (content.length === 0) {
-    // 题干步 → 拍照 →（后续审题步）
+    // 题干步 → 拍照 →（后续审题步）：题干步 next 指向拍照（否则脱钩）
+    first.next = photoId
     rest.splice(insertAt + 1, 0, photo)
   } else {
-    // 题干步 → 拍照 → 审题步(first)
+    // 题干步 → 拍照 → 审题步(first)：题干步 next 指向拍照
+    stemStep.next = photoId
     rest.splice(insertAt, 0, stemStep, photo)
   }
   return rest
@@ -602,16 +604,11 @@ function relink(expanded) {
     }
     delete st._sections
   }
-  // 顺序修正：无显式有效 next 的 text 步指向数组下一项
+  // 顺序修正：无显式有效 next 的步指向数组下一项（保留显式有效 next，如答对→算式）
   for (let i = 0; i < expanded.length - 1; i++) {
     const st = expanded[i]
     const nxt = expanded[i + 1].id
-    if (st.type === 'question' && st.test && st.test.length) {
-      // question 的 test/next 应已指向揭晓
-      if (st.next == null || !idSet.has(st.next)) st.next = nxt
-      continue
-    }
-    st.next = nxt
+    if (st.next == null || !idSet.has(st.next)) st.next = nxt
   }
   if (expanded.length) expanded[expanded.length - 1].next = expanded[expanded.length - 1].next == null
     ? null

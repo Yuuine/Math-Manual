@@ -11,9 +11,9 @@
   --cc-muted: #64748b;
   --cc-text: #1e293b;
   --cc-guide-title-size: 1em;
-  --cc-guide-desc-size: 0.88em;
-  --cc-guide-slot-size: 0.96em;
-  --cc-guide-meta-size: 0.82em;
+  --cc-guide-desc-size: 0.875em;
+  --cc-guide-slot-size: 1em;
+  --cc-guide-meta-size: 0.75em;
   --lf-body-size: var(--cc-body-size, 1.75rem);
   --cc-guide-glass-bg: rgba(255, 253, 250, 0.28);
   --cc-guide-glass-grid-line: rgba(178, 186, 200, 0.16);
@@ -22,6 +22,17 @@
   --cc-guide-glass-shadow:
     0 8px 28px rgba(15, 23, 42, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.52);
+}
+
+/* 超宽手机横屏（长宽比 ≥2:1，如 21:9）：按宽度缩放使根字号膨胀而高度不足 → 容器级遮蔽锚点整体降档，
+   em 阶梯比例不变 → 排版不乱。用 min-aspect-ratio 而非 max-height（16:9 基准手机高度同为 375-400px，
+   会被误降档）；选择器与上方规则等特异性（0,2,0）+ 源码顺序在后 → 断点胜出；
+   plan bodySize 内联 --cc-body-size 优先级更高，不受影响 */
+@media (min-aspect-ratio: 2/1) {
+  .course-container[data-layout="left-right"],
+  .course-container[data-layout="text-only"] {
+    --lf-body-size: 1.5rem;
+  }
 }
 
 .course-container[data-layout="left-right"] .course-scroll-main,
@@ -146,7 +157,7 @@
   border-radius: 0;
   background: none;
   box-shadow: none;
-  font-size: 1.05em;
+  font-size: var(--lf-scale-title);
   font-weight: 700;
   letter-spacing: 0.04em;
   line-height: 1;
@@ -162,7 +173,7 @@
   padding: 0;
   border: none;
   background: none;
-  font-size: 0.9em;
+  font-size: var(--lf-scale-caption);
   font-weight: 500;
   letter-spacing: 0.02em;
   line-height: 1;

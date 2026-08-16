@@ -52,7 +52,7 @@ test('拍照练习解耦：题干步(收起) → 拍照步(收起) → 审题步
 
 test('拍照练习解耦：首题干步无自身 section 时，outline 仍保留但 outlineIndex 缺省，审题步激活', () => {
   const p = makePlan()
-  // pr-stem 无 section 块（outline 靠后续 state 的 section 构建，等同 7-1-4star 的 练-开始）
+  // pr-stem 无 section 块（outline 靠后续 state 的 section 构建，等同「练-开始」形态）
   p.timeline[1].blocks = [{ id: 'stem-pr', type: 'text', region: 'top', class: 'tx-stem', replaceKey: 'stem', lines: ['练习题'] }]
   // pr-n1 提供 section + 审题内容
   p.timeline[2].blocks = [

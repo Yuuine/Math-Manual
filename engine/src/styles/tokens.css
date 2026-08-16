@@ -9,7 +9,21 @@
   --lf-font: "Inter", "Microsoft YaHei", "PingFang SC", sans-serif;
   --lf-body-size: 1.75rem;
   --lf-line-height: 1.58;
-  --lf-title-size: 2.25rem;
+
+  /* 语义字号阶梯（em 相对 --lf-body-size 锚点；组件只允许引用这些值） */
+  --lf-scale-hero: 1.25em;    /* 大字号块 size=large  35px @基准 */
+  --lf-scale-title: 1.05em;   /* 强调/题号标签/口答   29.4px @基准 */
+  --lf-scale-body: 1em;       /* 正文/引导标题/槽内容  28px @基准 */
+  --lf-scale-caption: 0.875em; /* 描述/说明/算式/选项  24.5px @基准 */
+  --lf-scale-meta: 0.75em;    /* 徽章/元信息/按钮/标签 21px @基准 */
+
+  /* 独立 UI 浮层字号（固定 rem，不随 body-size 缩放；值即渲染值） */
+  --lf-ui-toast-size: 0.9375rem;    /* toast 提示 15px */
+  --lf-ui-zoom-btn-size: 1.5rem;    /* 图片缩放关闭按钮 24px */
+  --lf-ui-gallery-title: 1.125rem;  /* 画廊卡片标题 18px */
+  --lf-ui-gallery-desc: 0.9375rem;  /* 画廊卡片描述 15px */
+  --lf-ui-qa-icon: 1.375rem;        /* quickQA 气泡图标 22px */
+  --lf-ui-qa-tag: 0.875rem;         /* quickQA 标签 14px */
   --lf-gap: 2rem;
   --lf-edge-pad: 2rem;
   --lf-figure-width: 22.5rem;

@@ -177,7 +177,7 @@
   background: transparent;
   color: #64748b;
   font-family: inherit;
-  font-size: 0.72em;
+  font-size: var(--lf-scale-meta);
   font-weight: 500;
   letter-spacing: 0.06em;
   line-height: 1;

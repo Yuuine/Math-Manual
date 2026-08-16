@@ -156,7 +156,7 @@
       var align = block.align || null
       if (align) el.style.textAlign = align
       if (block.size === 'large') {
-        el.style.fontSize = 'calc(var(--cc-body-size, var(--lf-body-size, 1.5rem)) * 1.25)'
+        el.classList.add('lf-block-text--large')
       }
       ;(block.lines || []).forEach(function (line) {
         var p = document.createElement('p')

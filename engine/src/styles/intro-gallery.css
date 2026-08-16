@@ -24,7 +24,7 @@
   width: fit-content;
   padding: 0 0.125rem; /* 0 2px */
   color: var(--cc-ink, var(--lf-ink, #0f172a));
-  font-size: 1.06em;
+  font-size: var(--lf-scale-title);
   font-weight: 800;
   line-height: 1.18;
   background: var(--marker-pink-bg, rgba(255, 142, 178, 0.28));
@@ -112,7 +112,7 @@
 
 .course-container .lf-intro-gallery-card-title {
   color: #17345f;
-  font-size: 1.125rem; /* 18px */
+  font-size: var(--lf-ui-gallery-title);
   font-weight: 800;
   line-height: 1.25;
   text-align: center;
@@ -120,7 +120,7 @@
 
 .course-container .lf-intro-gallery-card-desc {
   color: var(--cc-muted, var(--lf-muted, #64748b));
-  font-size: 0.9375rem; /* 15px */
+  font-size: var(--lf-ui-gallery-desc);
   font-weight: 600;
   line-height: 1.35;
   text-align: center;

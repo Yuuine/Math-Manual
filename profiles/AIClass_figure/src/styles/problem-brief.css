@@ -44,7 +44,7 @@
   display: flex;
   align-items: flex-start;
   color: #1e293b;
-  font-size: 0.82em;
+  font-size: var(--lf-scale-caption);
   line-height: 1.42;
 }
 .cc-problem-brief__row > * + * {
@@ -58,7 +58,7 @@
   border-radius: 62.4375rem;
   background: #e0ecff;
   color: #1d4ed8;
-  font-size: 0.82em;
+  font-size: var(--lf-scale-meta);
   font-weight: 700;
   text-align: center;
   white-space: nowrap;

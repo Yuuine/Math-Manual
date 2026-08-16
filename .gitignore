@@ -17,6 +17,8 @@ _output_/
 .codex/
 .opencode/
 .agent/
+docs/superpowers/
+CLAUDE.md
 *.code-workspace
 .DS_Store
 Thumbs.db

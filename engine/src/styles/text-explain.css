@@ -31,7 +31,7 @@
 .course-container .lf-block.tx-label .lf-section-title {
   color: #1e293b;
   font-weight: 650;
-  font-size: 1.02em;
+  font-size: var(--lf-scale-title);
 }
 
 .course-container .lf-block.tx-label.tx-label--answer {
@@ -139,5 +139,5 @@
 }
 
 .course-container .aic-choice-label .katex {
-  font-size: 1.05em;
+  font-size: var(--lf-scale-title);
 }

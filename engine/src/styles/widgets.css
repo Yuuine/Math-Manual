@@ -44,7 +44,7 @@
   display: inline-block;
   margin: 0;
   padding: 0 0.125rem;
-  font-size: 1.06em;
+  font-size: var(--lf-scale-body);
   font-weight: 800;
   line-height: 1.18;
   background: var(--marker-pink-bg);
@@ -71,7 +71,7 @@
   border: 1px solid rgba(37, 99, 235, 0.45);
   background: rgba(37, 99, 235, 0.1);
   color: #1d4ed8;
-  font-size: 0.78em;
+  font-size: var(--lf-scale-meta);
   font-weight: 700;
   letter-spacing: 0.04em;
   box-sizing: border-box;
@@ -130,13 +130,13 @@
   font-weight: 400;
 }
 
-/* interleaved 引导槽内 section tag/lead 随槽位字号缩放（text 模板独有规则，合并时补回） */
+/* interleaved 引导槽内 section tag 钉 meta 档（与主规则一致）；lead 随槽位字号缩放（text 模板独有规则，合并时补回） */
 .course-container[data-guidance-layout="interleaved"] .cc-guide-slot .lf-section-tag {
-  font-size: 0.78em;
+  font-size: var(--lf-scale-meta);
   min-height: 1.5rem;
   padding: 0.0625rem 0.5rem;
 }
-/* 槽内 lead 继承槽字号（= slot-size 0.92×body） */
+/* 槽内 lead 继承槽字号（= slot-size 1em，即 body 档） */
 
 .course-container .lf-block.lf-text--hang-after-tag {
   display: block;

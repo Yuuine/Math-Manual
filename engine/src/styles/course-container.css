@@ -32,7 +32,7 @@
 }
 
 .course-head {
-  font-size: var(--cc-title-size, 1.25rem);
+  font-size: var(--cc-title-size, var(--lf-scale-hero));
   font-weight: 600;
   margin-bottom: 0.75rem;
   padding: 0.75rem var(--cc-edge-pad, var(--lf-edge-pad, 2rem)) 0;
@@ -267,6 +267,11 @@
 
 .course-stub-line {
   margin: 0 0 0.5rem;
+}
+
+/* size=large 正文块：hero 档（1.25×body），em 相对容器 body-size */
+.lf-block-text--large {
+  font-size: var(--lf-scale-hero);
 }
 
 .lf-block-section {

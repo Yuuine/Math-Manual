@@ -9,7 +9,7 @@
   border-radius: 0.75rem; /* 12px */
   background: rgba(15, 23, 42, 0.9);
   color: #f8fafc;
-  font-size: 0.9375rem; /* 15px */
+  font-size: var(--lf-ui-toast-size);
   font-weight: 600;
   font-family: Inter, "Microsoft YaHei", sans-serif;
   box-shadow: 0 10px 36px rgba(15, 23, 42, 0.28);

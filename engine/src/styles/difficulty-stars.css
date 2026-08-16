@@ -50,7 +50,7 @@
 }
 
 .course-difficulty__label {
-  font-size: 0.68em;
+  font-size: var(--lf-scale-meta);
   font-weight: 400;
   letter-spacing: 0.01em;
   color: #7a8da3;

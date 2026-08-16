@@ -23,7 +23,7 @@
   flex-shrink: 0;
   display: block;
   margin-bottom: 0.25rem;
-  font-size: 0.88em;
+  font-size: var(--lf-scale-caption);
   font-weight: 700;
   line-height: 1.2;
   color: var(--cc-ink, var(--lf-ink, #0f172a));

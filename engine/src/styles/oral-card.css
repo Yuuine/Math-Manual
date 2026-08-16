@@ -46,7 +46,7 @@
   border: 1px dashed rgba(106, 76, 156, 0.48);
   background: rgba(106, 76, 156, 0.1);
   color: #6a4c9c;
-  font-size: 0.78em;
+  font-size: var(--lf-scale-meta);
   font-weight: 700;
   letter-spacing: 0.04em;
 }
@@ -58,7 +58,7 @@
 }
 
 .aic-oral-card__question.lf-text-lead {
-  font-size: 1.12em;
+  font-size: var(--lf-scale-title);
   line-height: 1.5;
   font-weight: 400;
 }
@@ -84,7 +84,7 @@
   padding: 0;
   border: none;
   background: transparent;
-  font-size: var(--cc-guide-meta-size, 0.88em);
+  font-size: var(--cc-guide-meta-size, var(--lf-scale-meta));
   line-height: 1.45;
 }
 
@@ -93,12 +93,12 @@
 }
 
 .course-container .cc-guide-sub .aic-oral-card__badge {
-  font-size: 0.78em;
+  font-size: var(--lf-scale-meta);
 }
 
 /* 穿插大纲槽位：口答卡片继承槽字号（= slot-size 0.92×body） */
 .course-container[data-guidance-layout="interleaved"] .cc-guide-slot .aic-oral-card__badge {
-  font-size: 0.78em;
+  font-size: var(--lf-scale-meta);
 }
 
 /* attachStepId 答步：不另占一行 */

@@ -10,7 +10,7 @@
 .cc-photo-answer-title {
   margin-bottom: 0.875rem; /* 14px */
   color: #175ea8;
-  font-size: 1.05em;
+  font-size: var(--lf-scale-title);
   font-weight: 700;
 }
 
