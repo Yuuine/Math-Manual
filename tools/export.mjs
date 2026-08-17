@@ -447,10 +447,11 @@ function exportCourse(courseDir) {
   writeEngineManifest(path.join(runtimeDir, 'src'), profile)
   writeEngineCss(path.join(runtimeDir, 'src'), profile)
 
-  // 资产：题干/插图给 courseware/assets，运行时 html/figure 读 courseware/runtime/assets
+  // 资产只落在 courseware/ 内：
+  //  - courseware/assets —— 引擎把 html/figure 的 `assets/xxx` 解析到此（lessonRoot 去掉 runtime/lesson）
+  //  - courseware/runtime/assets —— lesson.css 以 ../../assets/ 相对引用
   const assetsDir = path.join(courseDir, 'assets')
   if (fs.existsSync(assetsDir)) {
-    copyTree(assetsDir, path.join(out, 'assets'))
     copyTree(assetsDir, path.join(cwDir, 'assets'))
     copyTree(assetsDir, path.join(runtimeDir, 'assets'))
   }
