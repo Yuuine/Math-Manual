@@ -1270,8 +1270,8 @@
       appendLog(d, 'ok')
       var stat = 'user_submitted · ' + (d.kind || '') + ' · ' + (d.value || '')
       setStat(stat, 'ok')
-      if (d.kind === 'course_photo' || d.kind === 'course_vioce') {
-        setStat(d.kind === 'course_vioce'
+      if (d.kind === 'course_photo' || d.kind === 'course_voice') {
+        setStat(d.kind === 'course_voice'
           ? '已收到说一说请求 — 可点「拍照回显」'
           : '已收到拍照请求 — 可点「拍照回显」', 'ok')
         return
