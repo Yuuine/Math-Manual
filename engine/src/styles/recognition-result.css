@@ -21,10 +21,19 @@
   min-height: 2.625rem; /* 42px */
 }
 
+.cc-photo-answer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+
 .cc-photo-answer-button {
-  display: block;
-  min-width: 9.5rem; /* 152px */
-  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 10.5rem; /* 168px */
+  margin: 0;
   padding: 0.625rem 1.25rem; /* 10px 20px */
   border: 1px dashed #9ec8f1;
   border-radius: 0.625rem; /* 10px */
@@ -35,10 +44,47 @@
   cursor: pointer;
 }
 
+.cc-photo-answer-button + .cc-photo-answer-button {
+  margin-left: var(--lf-block-gap, 1rem); /* 随根字号适配，不写死 px */
+}
+
+.cc-photo-answer-button-icon {
+  display: block;
+  width: 1.5rem; /* 随根字号放大，约等于按钮字号观感 */
+  height: 1.5rem;
+  margin-right: 0.5rem;
+  flex-shrink: 0;
+}
+
+.cc-photo-answer-button-icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.cc-photo-answer-button--photo {
+  border-color: #6ea8e0;
+  color: #1b6cb5;
+}
+
+.cc-photo-answer-button--voice {
+  border-color: #3cbe8a;
+  color: #1c8a5c;
+}
+
 .cc-photo-answer-button:hover,
 .cc-photo-answer-button:focus {
   border-style: solid;
+}
+
+.cc-photo-answer-button--photo:hover,
+.cc-photo-answer-button--photo:focus {
   background: #eaf4ff;
+}
+
+.cc-photo-answer-button--voice:hover,
+.cc-photo-answer-button--voice:focus {
+  background: #eaf8f1;
 }
 
 .cc-photo-answer-content .katex-display {

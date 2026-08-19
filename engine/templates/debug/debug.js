@@ -1270,8 +1270,10 @@
       appendLog(d, 'ok')
       var stat = 'user_submitted · ' + (d.kind || '') + ' · ' + (d.value || '')
       setStat(stat, 'ok')
-      if (d.kind === 'course_photo') {
-        setStat('已收到拍照请求 — 可点「拍照回显」', 'ok')
+      if (d.kind === 'course_photo' || d.kind === 'course_vioce') {
+        setStat(d.kind === 'course_vioce'
+          ? '已收到说一说请求 — 可点「拍照回显」'
+          : '已收到拍照请求 — 可点「拍照回显」', 'ok')
         return
       }
       // 只记录提交结果，不自动推进到揭晓/分支 action（由教师手动驱动）

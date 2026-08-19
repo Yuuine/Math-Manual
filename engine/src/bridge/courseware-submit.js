@@ -4,7 +4,7 @@
 
   function postUserSubmitted(body) {
     if (!body || !body.kind) return
-    if (body.kind !== 'course_photo' && body.value == null) return
+    if (body.kind !== 'course_photo' && body.kind !== 'course_vioce' && body.value == null) return
     if (window.AIClassExecutionLog && typeof AIClassExecutionLog.post === 'function') {
       AIClassExecutionLog.post(Object.assign({ type: 'user_submitted' }, body))
     }
@@ -77,6 +77,9 @@
     submitInteraction: submit,
     requestPhoto: function () {
       postUserSubmitted({ kind: 'course_photo' })
+    },
+    requestVoice: function () {
+      postUserSubmitted({ kind: 'course_vioce' })
     },
     fromFillValue: fromFillValue,
     submitSingleChoice: function (payload, rawValue, block) {

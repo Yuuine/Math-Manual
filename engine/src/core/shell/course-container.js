@@ -393,12 +393,12 @@
     target.appendChild(card)
   }
 
-  CourseContainer.prototype.showPhotoAnswer = function (onPhotoRequest) {
+  CourseContainer.prototype.showPhotoAnswer = function (handlers) {
     var target = this._photoAnswerTarget()
     if (!target || !window.AIClassPhotoAnswer) return null
 
     this.clearPhotoAnswer()
-    var card = AIClassPhotoAnswer.create(onPhotoRequest)
+    var card = AIClassPhotoAnswer.create(handlers)
     this._insertPhotoAnswerCard(target, card)
     var scrollEl = this.scrollRightEl || this.scrollEl || target
     if (scrollEl && scrollEl.scrollTop != null) scrollEl.scrollTop = 0

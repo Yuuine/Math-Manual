@@ -461,9 +461,16 @@
       c.finalizeInteractions(state.id)
     }
     if (state.answer_type === 'course_photo' && typeof c.showPhotoAnswer === 'function') {
-      c.showPhotoAnswer(function () {
-        if (window.AIClassCoursewareSubmit && typeof AIClassCoursewareSubmit.requestPhoto === 'function') {
-          AIClassCoursewareSubmit.requestPhoto()
+      c.showPhotoAnswer({
+        onPhotoRequest: function () {
+          if (window.AIClassCoursewareSubmit && typeof AIClassCoursewareSubmit.requestPhoto === 'function') {
+            AIClassCoursewareSubmit.requestPhoto()
+          }
+        },
+        onVoiceRequest: function () {
+          if (window.AIClassCoursewareSubmit && typeof AIClassCoursewareSubmit.requestVoice === 'function') {
+            AIClassCoursewareSubmit.requestVoice()
+          }
         }
       })
     }
